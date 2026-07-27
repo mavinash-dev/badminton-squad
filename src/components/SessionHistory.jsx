@@ -17,8 +17,9 @@ function MatchLine({ match }) {
   );
 }
 
-function SessionCard({ session }) {
+function SessionCard({ session, onDelete }) {
   const [expanded, setExpanded] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const date = new Date(session.date + 'T12:00:00').toLocaleDateString('en-IN', {
     timeZone: 'Asia/Kolkata', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
@@ -44,6 +45,18 @@ function SessionCard({ session }) {
               </div>
             ))}
           </div>
+          {!confirmDelete ? (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 18, lineHeight: 1, padding: '0 4px', opacity: 0.4 }}
+              title="Delete session"
+            >🗑</button>
+          ) : (
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button className="btn-danger" onClick={() => onDelete(session.id)}>Delete</button>
+              <button onClick={() => setConfirmDelete(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 13, fontWeight: 600 }}>Cancel</button>
+            </div>
+          )}
           <button
             onClick={() => setExpanded(e => !e)}
             style={{
@@ -75,11 +88,11 @@ function SessionCard({ session }) {
   );
 }
 
-export default function SessionHistory({ sessions = [], onBack }) {
+export default function SessionHistory({ sessions = [], onBack, onDelete }) {
   const sorted = [...sessions].reverse();
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 48px' }}>
+    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 20px 48px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--fg-muted)', cursor: 'pointer', fontSize: 22, padding: '0 4px', lineHeight: 1 }}>‹</button>
         <ScrollIcon size={22} color="var(--fg)" />
@@ -97,7 +110,7 @@ export default function SessionHistory({ sessions = [], onBack }) {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {sorted.map(s => <SessionCard key={s.id} session={s} />)}
+          {sorted.map(s => <SessionCard key={s.id} session={s} onDelete={onDelete} />)}
         </div>
       )}
     </div>

@@ -146,7 +146,7 @@ export default function App() {
         )}
 
         {view === 'calendar' && (
-          <SessionHistory sessions={history.sessions || []} onBack={() => setView('home')} />
+          <SessionHistory sessions={history.sessions || []} onBack={() => setView('home')} onDelete={handleDeleteSession} />
         )}
 
         {view === 'schedule' && (
