@@ -1,7 +1,8 @@
 import { SQUAD } from '../lib/players';
 import { Avatar } from './Avatar';
 import { calcLeaderboard } from '../lib/tournament';
-import { DragonIcon, CrownIcon, ShieldIcon, CrossedAxesIcon, FlameIcon, ThroneIcon } from './Icons';
+import { CrownIcon, ShieldIcon, CrossedAxesIcon, FlameIcon, ThroneIcon } from './Icons';
+import { Icon } from '@iconify/react';
 
 const BATTLE_CRIES = [
   'The throne is empty. No blood has been spilled yet.',
@@ -114,7 +115,7 @@ export default function Home({ history, loading, onNewSession, onCasual, onViewH
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '80px 16px' }}>
-        <DragonIcon size={52} color="var(--green)" style={{ margin: '0 auto 20px', opacity: 0.4 }} />
+        <Icon icon="game-icons:throne-king" width={48} height={48} color="var(--green)" style={{ opacity: 0.35, display: 'block', margin: '0 auto 20px' }} />
         <div style={{ color: 'var(--fg-muted)', fontSize: 15 }}>Summoning the war records…</div>
       </div>
     );
@@ -136,18 +137,18 @@ export default function Home({ history, loading, onNewSession, onCasual, onViewH
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 48px' }}>
 
       {/* Hero */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 18, marginBottom: 36, paddingTop: 4 }}>
-        <DragonIcon size={56} color="var(--green)" style={{ flexShrink: 0, marginTop: 4, opacity: 0.85 }} />
-        <div>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--green)', marginBottom: 8 }}>
-            Badminton Squad
+      <div style={{ marginBottom: 32, paddingTop: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <Icon icon="game-icons:knight-banner" width={22} height={22} color="var(--green)" style={{ opacity: 0.8 }} />
+          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--green)' }}>
+            Four Houses
           </div>
-          <div style={{ fontWeight: 800, fontSize: 23, color: 'var(--fg)', marginBottom: 8, letterSpacing: '-.3px', lineHeight: 1.2 }}>
-            {noData ? 'The court of champions' : 'The war rages on'}
-          </div>
-          <div style={{ color: 'var(--fg-muted)', fontSize: 13, lineHeight: 1.6, fontStyle: noData ? 'italic' : 'normal' }}>
-            {noData ? battleCry : tagline}
-          </div>
+        </div>
+        <div style={{ fontWeight: 800, fontSize: 26, color: 'var(--fg)', marginBottom: 8, letterSpacing: '-.4px', lineHeight: 1.2 }}>
+          {noData ? 'The court of champions' : 'The war rages on'}
+        </div>
+        <div style={{ color: 'var(--fg-muted)', fontSize: 14, lineHeight: 1.6, fontStyle: noData ? 'italic' : 'normal' }}>
+          {noData ? battleCry : tagline}
         </div>
       </div>
 

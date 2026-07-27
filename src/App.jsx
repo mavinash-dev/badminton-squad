@@ -81,7 +81,7 @@ export default function App() {
         if (builtMatches.some(m => !m.teamA.length || !m.teamB.length)) throw new Error('mapping');
       } else throw new Error('no matches');
     } catch {
-      const fallbackCount = matchCount || (hours === 2 ? (players.length === 4 ? 6 : 9) : (players.length === 4 ? 4 : 6));
+      const fallbackCount = matchCount || (hours === 2 ? (players.length === 4 ? 8 : 9) : (players.length === 4 ? 4 : 6));
       builtMatches = generateMatches(players, fallbackCount).map(m => ({ ...m, winner: null }));
     }
 
@@ -144,9 +144,9 @@ export default function App() {
           onClick={() => { shuttle(); setView('home'); }}
           style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
-          <Icon icon="game-icons:shuttlecock" width={28} height={28} color="var(--green)" />
+          <Icon icon="game-icons:knight-banner" width={26} height={26} color="var(--green)" />
           <span style={{ fontWeight: 800, fontSize: 17, color: 'var(--fg)', letterSpacing: '-.3px' }}>
-            Badminton Squad
+            Four Houses
           </span>
         </button>
         <div style={{ display: 'flex', gap: 8 }}>
