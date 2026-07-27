@@ -36,15 +36,17 @@ function StatChip({ icon, label, value }) {
 function ChampionCard({ player, wins, games }) {
   const winRate = games > 0 ? Math.round((wins / games) * 100) : 0;
   return (
-    <div className="card mvp-card" style={{ flex: 1, textAlign: 'center', padding: '22px 12px', overflow: 'hidden' }}>
-      <CrownIcon size={22} color="var(--purple-mid)" style={{ margin: '0 auto 10px' }} />
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--purple-mid)', marginBottom: 14 }}>
-        All-time Champion
+    <div className="card mvp-card" style={{ flex: 1, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '22px 12px' }}>
+        <CrownIcon size={22} color="var(--purple-mid)" />
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--purple-mid)', margin: '10px 0 14px' }}>
+          All-time Champion
+        </div>
+        <Avatar player={player} size={60} border={false} />
+        <div style={{ fontWeight: 800, fontSize: 16, marginTop: 12 }}>{player.name}</div>
+        <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--green)', marginTop: 6, lineHeight: 1 }}>{winRate}%</div>
+        <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 5 }}>{wins}W / {games}G</div>
       </div>
-      <Avatar player={player} size={60} border={false} />
-      <div style={{ fontWeight: 800, fontSize: 16, marginTop: 12 }}>{player.name}</div>
-      <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--green)', marginTop: 6, lineHeight: 1 }}>{winRate}%</div>
-      <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 5 }}>{wins}W / {games}G</div>
     </div>
   );
 }
@@ -56,24 +58,26 @@ function DeadliestPairCard({ duoKey, wins, games }) {
   const winRate = games > 0 ? Math.round((wins / games) * 100) : 0;
   return (
     <div className="card" style={{
-      flex: 1, textAlign: 'center', padding: '22px 12px',
+      flex: 1,
       background: 'linear-gradient(135deg, rgba(52,211,153,.05), rgba(124,58,237,.05))',
       borderColor: 'rgba(52,211,153,.18)',
     }}>
-      <ShieldIcon size={22} color="var(--green)" style={{ margin: '0 auto 10px' }} />
-      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--green)', marginBottom: 14 }}>
-        Deadliest Pair
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '22px 12px' }}>
+        <ShieldIcon size={22} color="var(--green)" />
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--green)', margin: '10px 0 14px' }}>
+          Deadliest Pair
+        </div>
+        <div style={{ display: 'flex', marginBottom: 12 }}>
+          {players.map((p, i) => (
+            <div key={p.id} style={{ marginLeft: i > 0 ? -10 : 0 }}>
+              <Avatar player={p} size={46} />
+            </div>
+          ))}
+        </div>
+        <div style={{ fontWeight: 800, fontSize: 14 }}>{names}</div>
+        <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--green)', marginTop: 6, lineHeight: 1 }}>{winRate}%</div>
+        <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 5 }}>{wins}W / {games}G</div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-        {players.map((p, i) => (
-          <div key={p.id} style={{ marginLeft: i > 0 ? -10 : 0 }}>
-            <Avatar player={p} size={46} />
-          </div>
-        ))}
-      </div>
-      <div style={{ fontWeight: 800, fontSize: 14 }}>{names}</div>
-      <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--green)', marginTop: 6, lineHeight: 1 }}>{winRate}%</div>
-      <div style={{ fontSize: 11, color: 'var(--fg-muted)', marginTop: 5 }}>{wins}W / {games}G</div>
     </div>
   );
 }
