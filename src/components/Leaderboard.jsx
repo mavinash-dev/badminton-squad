@@ -1,94 +1,102 @@
 import { useEffect, useState } from 'react';
 import { readHistory } from '../lib/github';
 import { calcLeaderboard } from '../lib/tournament';
+import { SQUAD } from '../lib/players';
 
-function WinRateBar({ rate }) {
+function WinBar({ rate }) {
   return (
-    <div style={{ height: 4, background: 'var(--border)', borderRadius: 2, overflow: 'hidden', marginTop: 6 }}>
+    <div style={{ height: 5, background: 'var(--border)', borderRadius: 3, overflow: 'hidden', marginTop: 5 }}>
       <div style={{
         height: '100%',
         width: `${Math.round(rate * 100)}%`,
-        background: 'var(--green)',
-        borderRadius: 2,
-        transition: 'width 0.8s ease',
+        background: 'var(--green-mid)',
+        borderRadius: 3,
+        transition: 'width .9s ease',
       }} />
     </div>
   );
 }
 
-export default function Leaderboard() {
+export default function Leaderboard({ onBack }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
     readHistory()
-      .then(({ data: history }) => setData(calcLeaderboard(history)))
-      .catch(e => setError(`Could not load history: ${e.message}`))
+      .then(({ data: h }) => setData(calcLeaderboard(h)))
+      .catch(e => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return (
-    <div style={{ textAlign: 'center', padding: '60px 16px', color: 'var(--fg-muted)' }}>
-      Loading leaderboard…
+    <div style={{ textAlign: 'center', padding: '60px 16px', color: 'var(--fg-muted)', fontSize: 15 }}>
+      Loading…
     </div>
   );
-
   if (error) return (
-    <div style={{ textAlign: 'center', padding: '60px 16px', color: '#ff6b6b', fontSize: 14 }}>{error}</div>
+    <div style={{ textAlign: 'center', padding: '60px 16px', color: 'var(--red)', fontSize: 14 }}>{error}</div>
   );
 
   const { players, duos } = data;
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: '32px 16px' }}>
-      {/* Players */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-        <div className="eyebrow" style={{ flex: 1 }}>Best Single Player</div>
+    <div style={{ maxWidth: 580, margin: '0 auto', padding: '24px 16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--fg-muted)', cursor: 'pointer', fontSize: 20, padding: '0 4px' }}>‹</button>
+        <div style={{ fontWeight: 800, fontSize: 22, flex: 1 }}>Leaderboard</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span className="dot-live" />
-          <span style={{ fontSize: 11, fontFamily: 'JetBrains Mono', color: 'var(--fg-muted)' }}>All-time</span>
+          <span style={{ fontSize: 12, color: 'var(--fg-muted)', fontWeight: 600 }}>All-time</span>
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 36 }}>
+      {/* Players */}
+      <div className="section-label" style={{ marginBottom: 12 }}>Best Player</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
         {players.length === 0 && (
           <div className="card" style={{ textAlign: 'center', color: 'var(--fg-muted)', fontSize: 14 }}>
-            No sessions recorded yet.
+            No sessions yet — play some matches first!
           </div>
         )}
-        {players.map((p, i) => (
-          <div
-            key={p.id}
-            className={`card ${i === 0 && p.games > 0 ? 'mvp-shimmer' : ''}`}
-            style={{
-              animationDelay: `calc(${i} * 80ms)`,
-              borderColor: i === 0 && p.games > 0 ? 'rgba(255,215,0,0.4)' : undefined,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <span style={{ fontSize: i === 0 ? 24 : 18 }}>
-                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`}
-              </span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 16 }}>{p.name}</div>
-                <WinRateBar rate={p.winRate} />
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontFamily: 'JetBrains Mono', color: 'var(--green)', fontWeight: 700 }}>
-                  {Math.round(p.winRate * 100)}%
+        {players.map((p, i) => {
+          const squad = SQUAD.find(q => q.id === p.id);
+          const isMvp = i === 0 && p.games > 0;
+          return (
+            <div
+              key={p.id}
+              className={`card ${isMvp ? 'mvp-card' : ''}`}
+              style={{ animationDelay: `${i * 70}ms` }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontSize: isMvp ? 24 : 16, minWidth: 28 }}>
+                  {['🥇','🥈','🥉'][i] || `#${i+1}`}
+                </span>
+                <div style={{
+                  width: 40, height: 40, borderRadius: '50%',
+                  background: squad?.color, color: squad?.textColor || '#f5f0e8',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 14, fontWeight: 800, flexShrink: 0,
+                }}>{squad?.initials}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: 15 }}>{p.name}</div>
+                  <WinBar rate={p.winRate} />
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{p.wins}W / {p.games}G</div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: 800, color: 'var(--green)', fontSize: 16 }}>
+                    {Math.round(p.winRate * 100)}%
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{p.wins}W / {p.games}G</div>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Duos */}
-      <div className="eyebrow" style={{ marginBottom: 20 }}>Best Duo</div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="section-label" style={{ marginBottom: 12 }}>Best Duo</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {duos.length === 0 && (
           <div className="card" style={{ textAlign: 'center', color: 'var(--fg-muted)', fontSize: 14 }}>
             No duo stats yet.
@@ -96,23 +104,33 @@ export default function Leaderboard() {
         )}
         {duos.slice(0, 6).map((d, i) => {
           const ids = d.key.split('_');
-          const names = ids.map(id => players.find(p => p.id === id)?.name || id);
+          const names = ids.map(id => SQUAD.find(p => p.id === id)?.name || id);
+          const colors = ids.map(id => SQUAD.find(p => p.id === id)?.color || 'var(--green)');
           return (
-            <div
-              key={d.key}
-              className="card"
-              style={{ animationDelay: `calc(${i} * 80ms)` }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <span style={{ fontSize: 15, color: 'var(--fg-muted)' }}>#{i + 1}</span>
+            <div key={d.key} className="card" style={{ animationDelay: `${i * 70}ms` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ color: 'var(--fg-muted)', fontSize: 13, minWidth: 22 }}>#{i+1}</span>
+                <div style={{ display: 'flex', marginRight: 4 }}>
+                  {ids.map((id, j) => {
+                    const sq = SQUAD.find(p => p.id === id);
+                    return (
+                      <div key={id} style={{
+                        width: 32, height: 32, borderRadius: '50%',
+                        background: sq?.color, color: sq?.textColor || '#f5f0e8',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 11, fontWeight: 800,
+                        marginLeft: j > 0 ? -8 : 0,
+                        border: '2px solid var(--surface)',
+                      }}>{sq?.initials}</div>
+                    );
+                  })}
+                </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600 }}>{names.join(' & ')}</div>
-                  <WinRateBar rate={d.winRate} />
+                  <div style={{ fontWeight: 700 }}>{names.join(' & ')}</div>
+                  <WinBar rate={d.winRate} />
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontFamily: 'JetBrains Mono', color: 'var(--green)', fontWeight: 700 }}>
-                    {Math.round(d.winRate * 100)}%
-                  </div>
+                  <div style={{ fontWeight: 800, color: 'var(--green)' }}>{Math.round(d.winRate * 100)}%</div>
                   <div style={{ fontSize: 11, color: 'var(--fg-muted)' }}>{d.wins}W / {d.games}G</div>
                 </div>
               </div>

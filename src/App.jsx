@@ -1,52 +1,86 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Calendar from './components/Calendar';
 import Setup from './components/Setup';
 import Schedule from './components/Schedule';
 import MatchLogger from './components/MatchLogger';
 import Results from './components/Results';
 import Leaderboard from './components/Leaderboard';
+import CasualLog from './components/CasualLog';
 import { ShuttleTransition, ShuttlecockSVG } from './components/Animations';
 import { generateSchedule } from './lib/grok';
 import { generateMatches } from './lib/tournament';
+import { readHistory, writeHistory } from './lib/github';
 
 export default function App() {
-  const [view, setView] = useState('setup');
-  const [players, setPlayers] = useState([]);
-  const [matches, setMatches] = useState([]);
-  const [loggingMatchId, setLoggingMatchId] = useState(null);
-  const [showShuttle, setShowShuttle] = useState(false);
-  const [shuttleKey, setShuttleKey] = useState(0);
+  const [view, setView] = useState('home');   // home | schedule | results | leaderboard
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [historyCache, setHistoryCache] = useState(null);
 
-  function triggerShuttle() {
+  // Modal states
+  const [setupDate, setSetupDate] = useState(null);
+  const [casualDate, setCasualDate] = useState(null);
+  const [loggingMatchId, setLoggingMatchId] = useState(null);
+
+  // Session flow state
+  const [sessionPlayers, setSessionPlayers] = useState([]);
+  const [sessionDate, setSessionDate] = useState(null);
+  const [matches, setMatches] = useState([]);
+
+  // Shuttle animation
+  const [shuttleKey, setShuttleKey] = useState(0);
+  const [showShuttle, setShowShuttle] = useState(false);
+
+  function shuttle() {
     setShuttleKey(k => k + 1);
     setShowShuttle(true);
     setTimeout(() => setShowShuttle(false), 2000);
   }
 
-  async function handleGenerate({ players: ps, hours }) {
-    setPlayers(ps);
+  // Load history on mount
+  useEffect(() => {
+    readHistory()
+      .then(({ data, sha }) => {
+        setHistoryCache({ data, sha });
+        setSessions(data.sessions || []);
+      })
+      .catch(() => setSessions([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function refreshHistory() {
+    try {
+      const { data, sha } = await readHistory();
+      setHistoryCache({ data, sha });
+      setSessions(data.sessions || []);
+    } catch {}
+  }
+
+  // --- Session flow ---
+  async function handleGenerate({ players, hours, date }) {
+    setSetupDate(null);
+    setSessionPlayers(players);
+    setSessionDate(date);
 
     let builtMatches;
     try {
-      const grokResult = await generateSchedule({ players: ps, hours });
+      const grokResult = await generateSchedule({ players, hours });
       if (grokResult?.matches) {
         builtMatches = grokResult.matches.map((m, i) => ({
           matchId: m.id || i + 1,
-          teamA: m.teamA.map(name => ps.find(p => p.name === name)?.id).filter(Boolean),
-          teamB: m.teamB.map(name => ps.find(p => p.name === name)?.id).filter(Boolean),
+          teamA: m.teamA.map(name => players.find(p => p.name === name)?.id).filter(Boolean),
+          teamB: m.teamB.map(name => players.find(p => p.name === name)?.id).filter(Boolean),
           format: m.format,
           winner: null,
         }));
-        // Fall back if mapping failed
         if (builtMatches.some(m => !m.teamA.length || !m.teamB.length)) throw new Error('mapping');
-      } else {
-        throw new Error('no matches');
-      }
+      } else throw new Error('no matches');
     } catch {
-      builtMatches = generateMatches(ps, hours).map(m => ({ ...m, winner: null }));
+      builtMatches = generateMatches(players, hours).map(m => ({ ...m, winner: null }));
     }
 
     setMatches(builtMatches);
-    triggerShuttle();
+    shuttle();
     setView('schedule');
   }
 
@@ -55,73 +89,157 @@ export default function App() {
     setLoggingMatchId(null);
   }
 
-  function handleSaved() {
-    triggerShuttle();
-    setView('leaderboard');
+  async function handleSessionSaved() {
+    await refreshHistory();
+    shuttle();
+    setView('home');
   }
 
-  function navTo(v) {
-    triggerShuttle();
-    setView(v);
+  // --- Casual log ---
+  async function handleCasualSave({ type, playerIds, note, date }) {
+    setCasualDate(null);
+    try {
+      const { data: history, sha } = historyCache
+        ? await readHistory()
+        : { data: { players: [], duos: {}, sessions: [] }, sha: null };
+
+      const sessionId = `s_${date.replace(/-/g, '')}_casual_${Date.now()}`;
+      const session = {
+        id: sessionId, date, type: 'casual',
+        playerIds, note,
+        matches: [], sessionLeaderboard: {}, aiSummary: '',
+      };
+      history.sessions.push(session);
+
+      if (sha) {
+        await writeHistory(history, sha, date);
+      }
+      await refreshHistory();
+    } catch (e) {
+      console.error('Save casual failed', e);
+    }
+  }
+
+  // --- Delete session ---
+  async function handleDeleteSession(id) {
+    try {
+      const { data: history, sha } = await readHistory();
+      history.sessions = history.sessions.filter(s => s.id !== id);
+      await writeHistory(history, sha, 'delete-session');
+      await refreshHistory();
+    } catch (e) {
+      console.error('Delete failed', e);
+    }
   }
 
   const logMatch = loggingMatchId !== null ? matches.find(m => m.matchId === loggingMatchId) : null;
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <div style={{ minHeight: '100vh' }}>
-      <div className="top-band" />
+      {showShuttle && <ShuttleTransition id={shuttleKey} />}
 
-      {showShuttle && <ShuttleTransition key={shuttleKey} />}
-
-      <nav style={{
+      {/* Header */}
+      <header style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '28px 24px 0',
-        maxWidth: 700, margin: '0 auto',
+        padding: '18px 20px 0',
+        maxWidth: 640, margin: '0 auto',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }} onClick={() => navTo('setup')}>
-          <ShuttlecockSVG style={{ width: 28, height: 28 }} />
-          <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-.3px', color: 'var(--fg)' }}>
+        <button
+          onClick={() => { shuttle(); setView('home'); }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          <ShuttlecockSVG style={{ width: 30, height: 30 }} />
+          <span style={{ fontWeight: 800, fontSize: 18, color: 'var(--fg)', letterSpacing: '-.3px' }}>
             Badminton Squad
           </span>
-        </div>
+        </button>
         <div style={{ display: 'flex', gap: 8 }}>
-          {view !== 'setup' && (
-            <button
-              className="btn-secondary"
-              style={{ fontSize: 12, padding: '7px 14px' }}
-              onClick={() => navTo('setup')}
-            >
-              New Session
-            </button>
-          )}
           <button
             className={view === 'leaderboard' ? 'btn-primary' : 'btn-secondary'}
-            style={{ fontSize: 12, padding: '7px 14px' }}
-            onClick={() => navTo('leaderboard')}
+            style={{ fontSize: 13, padding: '7px 16px' }}
+            onClick={() => { shuttle(); setView('leaderboard'); }}
           >
-            Leaderboard
+            🏆 Leaderboard
+          </button>
+          <button
+            className="btn-primary"
+            style={{ fontSize: 13, padding: '7px 16px' }}
+            onClick={() => setSetupDate(today)}
+          >
+            + Session
           </button>
         </div>
-      </nav>
+      </header>
 
-      {view === 'setup' && <Setup onGenerate={handleGenerate} />}
-      {view === 'schedule' && (
-        <Schedule
-          matches={matches}
-          players={players}
-          onLogWinner={id => setLoggingMatchId(id)}
-          onViewResults={() => { triggerShuttle(); setView('results'); }}
+      {/* Views */}
+      <div className="app-wrap" style={{ paddingTop: 24 }}>
+        {view === 'home' && (
+          <div>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontWeight: 800, fontSize: 24, marginBottom: 4 }}>Hey squad 🏸</div>
+              <div style={{ color: 'var(--fg-muted)', fontSize: 15 }}>
+                {loading ? 'Loading sessions…' : `${sessions.length} sessions played`}
+              </div>
+            </div>
+            <div className="card">
+              <Calendar
+                sessions={sessions}
+                onDayClick={(date, type) => {
+                  if (type === 'casual') setCasualDate(date);
+                  else setSetupDate(date);
+                }}
+                onDeleteSession={handleDeleteSession}
+              />
+            </div>
+          </div>
+        )}
+
+        {view === 'schedule' && (
+          <Schedule
+            matches={matches}
+            players={sessionPlayers}
+            onLogWinner={id => setLoggingMatchId(id)}
+            onViewResults={() => { shuttle(); setView('results'); }}
+            onBack={() => setView('home')}
+          />
+        )}
+
+        {view === 'results' && (
+          <Results
+            players={sessionPlayers}
+            matches={matches}
+            date={sessionDate}
+            onSaved={handleSessionSaved}
+            onBack={() => setView('schedule')}
+          />
+        )}
+
+        {view === 'leaderboard' && (
+          <Leaderboard onBack={() => setView('home')} />
+        )}
+      </div>
+
+      {/* Modals */}
+      {setupDate && (
+        <Setup
+          date={setupDate}
+          onGenerate={handleGenerate}
+          onClose={() => setSetupDate(null)}
         />
       )}
-      {view === 'results' && (
-        <Results players={players} matches={matches} onSaved={handleSaved} />
+
+      {casualDate && (
+        <CasualLog
+          date={casualDate}
+          onSave={handleCasualSave}
+          onClose={() => setCasualDate(null)}
+        />
       )}
-      {view === 'leaderboard' && <Leaderboard />}
 
       {logMatch && (
         <MatchLogger
           match={logMatch}
-          players={players}
           onLog={handleLogWinner}
           onClose={() => setLoggingMatchId(null)}
         />

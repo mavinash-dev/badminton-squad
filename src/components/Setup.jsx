@@ -1,126 +1,127 @@
 import { useState } from 'react';
+import { SQUAD } from '../lib/players';
 import { RacketSVG } from './Animations';
 
-export default function Setup({ onGenerate }) {
-  const [playerCount, setPlayerCount] = useState(4);
+function PlayerToggle({ player, selected, onToggle }) {
+  return (
+    <button
+      onClick={() => onToggle(player.id)}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+        background: 'none', border: 'none', cursor: 'pointer', padding: '10px 12px',
+        borderRadius: 14,
+        outline: selected ? `2px solid ${player.color}` : '2px solid transparent',
+        backgroundColor: selected ? `${player.color}15` : 'transparent',
+        transition: 'all .15s',
+      }}
+    >
+      <div style={{
+        width: 52, height: 52, borderRadius: '50%',
+        background: player.color,
+        color: player.textColor || '#f5f0e8',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: 18, fontWeight: 800,
+        opacity: selected ? 1 : 0.38,
+        transition: 'opacity .15s, box-shadow .15s',
+        boxShadow: selected ? `0 3px 12px ${player.color}45` : 'none',
+      }}>
+        {player.initials}
+      </div>
+      <span style={{ fontSize: 13, fontWeight: 700, color: selected ? 'var(--fg)' : 'var(--fg-muted)', transition: 'color .15s' }}>
+        {player.name}
+      </span>
+    </button>
+  );
+}
+
+export default function Setup({ date, onGenerate, onClose }) {
+  const [selectedIds, setSelectedIds] = useState(SQUAD.map(p => p.id));
   const [hours, setHours] = useState(1);
-  const [names, setNames] = useState(['', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [swing, setSwing] = useState(false);
 
-  const activePlayers = names.slice(0, playerCount);
-  const canGenerate = activePlayers.every(n => n.trim().length > 0);
-
-  function handleCountChange(n) {
-    setPlayerCount(n);
-    if (n === 3) setNames(prev => [prev[0], prev[1], prev[2], '']);
+  function toggle(id) {
+    setSelectedIds(prev => {
+      if (prev.includes(id)) {
+        if (prev.length <= 3) return prev; // min 3
+        return prev.filter(x => x !== id);
+      }
+      if (prev.length >= 4) return prev; // max 4
+      return [...prev, id];
+    });
   }
+
+  const players = SQUAD.filter(p => selectedIds.includes(p.id));
+  const canGenerate = players.length >= 3;
 
   async function handleGenerate() {
     setSwing(true);
     setTimeout(() => setSwing(false), 400);
     setLoading(true);
-    const players = activePlayers.map((name, i) => ({ id: `p${i + 1}`, name: name.trim() }));
-    await onGenerate({ players, hours });
+    await onGenerate({ players, hours, date });
     setLoading(false);
   }
 
+  const displayDate = new Date(date + 'T12:00:00').toLocaleDateString('en-IN', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  });
+
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: '32px 16px' }}>
-      <div className="eyebrow" style={{ marginBottom: 24 }}>Session Setup</div>
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(245,240,232,.88)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 50, padding: 16, backdropFilter: 'blur(6px)',
+    }}>
+      <div className="card" style={{ width: '100%', maxWidth: 440, padding: 28, animation: 'fadeUp .25s ease both' }}>
+        <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>🏸 Match Session</div>
+        <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 24 }}>{displayDate}</div>
 
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 10, fontFamily: 'JetBrains Mono', textTransform: 'uppercase', letterSpacing: '.12em' }}>Players</div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            {[3, 4].map(n => (
-              <button
-                key={n}
-                onClick={() => handleCountChange(n)}
-                style={{
-                  flex: 1, padding: '10px 0', borderRadius: 10, border: '1px solid',
-                  borderColor: playerCount === n ? 'var(--green)' : 'var(--border)',
-                  background: playerCount === n ? 'var(--green-bg)' : 'transparent',
-                  color: playerCount === n ? 'var(--green)' : 'var(--fg-muted)',
-                  fontWeight: 600, fontSize: 15, cursor: 'pointer',
-                  transition: 'all .15s',
-                  fontFamily: 'Inter',
-                }}
-              >
-                {n} Players
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 10, fontFamily: 'JetBrains Mono', textTransform: 'uppercase', letterSpacing: '.12em' }}>Duration</div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            {[1, 2].map(h => (
-              <button
-                key={h}
-                onClick={() => setHours(h)}
-                style={{
-                  flex: 1, padding: '10px 0', borderRadius: 10, border: '1px solid',
-                  borderColor: hours === h ? 'var(--green)' : 'var(--border)',
-                  background: hours === h ? 'var(--green-bg)' : 'transparent',
-                  color: hours === h ? 'var(--green)' : 'var(--fg-muted)',
-                  fontWeight: 600, fontSize: 15, cursor: 'pointer',
-                  transition: 'all .15s',
-                  fontFamily: 'Inter',
-                }}
-              >
-                {h}h
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="card" style={{ marginBottom: 28 }}>
-        <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 16, fontFamily: 'JetBrains Mono', textTransform: 'uppercase', letterSpacing: '.12em' }}>Player Names</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {Array.from({ length: playerCount }, (_, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ color: 'var(--fg-muted)', fontSize: 12, fontFamily: 'JetBrains Mono', minWidth: 20 }}>P{i + 1}</span>
-              <input
-                type="text"
-                value={names[i]}
-                onChange={e => {
-                  const next = [...names];
-                  next[i] = e.target.value;
-                  setNames(next);
-                }}
-                placeholder={`Player ${i + 1} name`}
-                style={{
-                  flex: 1, background: 'var(--canvas)', border: '1px solid var(--border)',
-                  borderRadius: 8, padding: '10px 14px', color: 'var(--fg)',
-                  fontSize: 15, fontFamily: 'Inter', outline: 'none',
-                  transition: 'border-color .15s',
-                }}
-                onFocus={e => e.target.style.borderColor = 'var(--green)'}
-                onBlur={e => e.target.style.borderColor = 'var(--border)'}
-              />
-            </div>
+        {/* Player selection */}
+        <div className="section-label">Who's playing? (3 or 4)</div>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
+          {SQUAD.map(p => (
+            <PlayerToggle key={p.id} player={p} selected={selectedIds.includes(p.id)} onToggle={toggle} />
           ))}
         </div>
+        <p style={{ fontSize: 12, color: 'var(--fg-muted)', textAlign: 'center', marginBottom: 22 }}>
+          {players.length} players — {players.length === 4 ? '2v2 rotating' : '1v2 handicap rotation'}
+        </p>
+
+        {/* Duration */}
+        <div className="section-label">Duration</div>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+          {[1, 2].map(h => (
+            <button
+              key={h}
+              onClick={() => setHours(h)}
+              style={{
+                flex: 1, padding: '11px 0', borderRadius: 12, border: '1.5px solid',
+                borderColor: hours === h ? 'var(--green)' : 'var(--border)',
+                background: hours === h ? 'var(--green-bg)' : 'var(--elevated)',
+                color: hours === h ? 'var(--green)' : 'var(--fg-muted)',
+                fontWeight: 700, fontSize: 15, cursor: 'pointer',
+                transition: 'all .15s',
+                fontFamily: 'Nunito, sans-serif',
+              }}
+            >
+              {h} hour{h > 1 ? 's' : ''}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            className="btn-primary"
+            style={{ flex: 1, justifyContent: 'center' }}
+            onClick={handleGenerate}
+            disabled={!canGenerate || loading}
+          >
+            <RacketSVG swing={swing} />
+            {loading ? 'Generating…' : 'Generate Schedule'}
+          </button>
+          <button className="btn-secondary" onClick={onClose}>Cancel</button>
+        </div>
       </div>
-
-      <button
-        className="btn-primary"
-        style={{ width: '100%', justifyContent: 'center', fontSize: 16 }}
-        onClick={handleGenerate}
-        disabled={!canGenerate || loading}
-      >
-        <RacketSVG swing={swing} />
-        {loading ? 'Generating…' : 'Generate Schedule'}
-      </button>
-
-      <p style={{ marginTop: 16, textAlign: 'center', color: 'var(--fg-muted)', fontSize: 13 }}>
-        {playerCount === 4
-          ? `3 rotating 2v2 matchups · ${hours === 1 ? 'first to 21' : 'best of 3 sets'}`
-          : `Handicap rotation (1 vs 2) · ${hours === 1 ? '2 rotations to 15' : '4 rotations to 21'}`}
-      </p>
     </div>
   );
 }
