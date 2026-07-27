@@ -1,43 +1,75 @@
 {
   "players": [
-    { "id": "p1", "name": "Avinash", "wins": 7, "games": 12 },
-    { "id": "p2", "name": "Bhavya",  "wins": 5, "games": 12 },
-    { "id": "p3", "name": "Malay",   "wins": 4, "games": 10 },
-    { "id": "p4", "name": "Rajeev",  "wins": 6, "games": 12 }
+    { "id": "p1", "name": "Avinash", "wins": 18, "games": 32 },
+    { "id": "p2", "name": "Bhavya",  "wins": 14, "games": 30 },
+    { "id": "p3", "name": "Malay",   "wins": 11, "games": 28 },
+    { "id": "p4", "name": "Rajeev",  "wins": 15, "games": 30 }
   ],
   "duos": {
-    "p1_p2": { "wins": 3, "games": 5 },
-    "p1_p3": { "wins": 2, "games": 4 },
-    "p1_p4": { "wins": 2, "games": 3 },
-    "p2_p3": { "wins": 1, "games": 3 },
-    "p2_p4": { "wins": 3, "games": 5 },
-    "p3_p4": { "wins": 2, "games": 3 }
+    "p1_p2": { "wins": 7, "games": 11 },
+    "p1_p3": { "wins": 4, "games": 8  },
+    "p1_p4": { "wins": 6, "games": 9  },
+    "p2_p3": { "wins": 3, "games": 7  },
+    "p2_p4": { "wins": 8, "games": 12 },
+    "p3_p4": { "wins": 4, "games": 8  }
   },
   "sessions": [
     {
-      "id": "s_20260706_001",
-      "date": "2026-07-06",
+      "id": "s_20260629_001",
+      "date": "2026-06-29",
       "type": "structured",
       "duration": 2,
       "playerCount": 4,
-      "playerIds": ["p1", "p2", "p3", "p4"],
+      "playerIds": ["p1","p2","p3","p4"],
       "matches": [
-        { "matchId": 1, "teamA": ["p1", "p2"], "teamB": ["p3", "p4"], "format": "Best of 3 sets (first to 21)", "winner": "A" },
-        { "matchId": 2, "teamA": ["p1", "p3"], "teamB": ["p2", "p4"], "format": "Best of 3 sets (first to 21)", "winner": "B" },
-        { "matchId": 3, "teamA": ["p1", "p4"], "teamB": ["p2", "p3"], "format": "Best of 3 sets (first to 21)", "winner": "A" }
+        { "matchId": 1, "teamA": ["p1","p2"], "teamB": ["p3","p4"], "format": "First to 21", "winner": "A" },
+        { "matchId": 2, "teamA": ["p1","p3"], "teamB": ["p2","p4"], "format": "First to 21", "winner": "B" },
+        { "matchId": 3, "teamA": ["p1","p4"], "teamB": ["p2","p3"], "format": "First to 21", "winner": "A" },
+        { "matchId": 4, "teamA": ["p1","p2"], "teamB": ["p3","p4"], "format": "First to 21", "winner": "A" },
+        { "matchId": 5, "teamA": ["p1","p3"], "teamB": ["p2","p4"], "format": "First to 21", "winner": "B" },
+        { "matchId": 6, "teamA": ["p1","p4"], "teamB": ["p2","p3"], "format": "First to 21", "winner": "A" },
+        { "matchId": 7, "teamA": ["p1","p2"], "teamB": ["p3","p4"], "format": "First to 21", "winner": "B" },
+        { "matchId": 8, "teamA": ["p1","p3"], "teamB": ["p2","p4"], "format": "First to 21", "winner": "A" }
       ],
       "sessionLeaderboard": { "mvp": "p1", "bestDuo": "p1_p2" },
-      "aiSummary": "What a Sunday! Avinash and Rajeev were absolutely unstoppable today — they bulldozed through every match like the court owed them money. Bhavya and Malay, don't worry, there's always next week to redeem yourselves... or not."
+      "aiSummary": "Avinash was an absolute menace today — racking up 5 wins and making Malay question his life choices on the court. Rajeev showed up strong in the second half but it was too little too late. Bhavya and Malay, the redemption arc starts next Sunday."
+    },
+    {
+      "id": "s_20260706_001",
+      "date": "2026-07-06",
+      "type": "casual",
+      "playerCount": 3,
+      "playerIds": ["p1","p2","p4"],
+      "matches": [
+        { "matchId": 1, "teamA": ["p1"], "teamB": ["p2","p4"], "format": "First to 15", "winner": "B" },
+        { "matchId": 2, "teamA": ["p2"], "teamB": ["p1","p4"], "format": "First to 15", "winner": "A" },
+        { "matchId": 3, "teamA": ["p4"], "teamB": ["p1","p2"], "format": "First to 15", "winner": "B" },
+        { "matchId": 4, "teamA": ["p1"], "teamB": ["p2","p4"], "format": "First to 15", "winner": "A" },
+        { "matchId": 5, "teamA": ["p2"], "teamB": ["p1","p4"], "format": "First to 15", "winner": "B" },
+        { "matchId": 6, "teamA": ["p4"], "teamB": ["p1","p2"], "format": "First to 15", "winner": "A" }
+      ],
+      "sessionLeaderboard": { "mvp": null, "bestDuo": null },
+      "aiSummary": "Casual Sunday vibes but the competition was anything but! Bhavya went full tryhard and dragged Rajeev to two wins. Avinash held his own going solo but couldn't crack the Bhavya-Rajeev wall. Where was Malay? Recovering from last week's humbling, presumably."
     },
     {
       "id": "s_20260713_001",
       "date": "2026-07-13",
-      "type": "casual",
-      "playerIds": ["p1", "p2", "p4"],
-      "note": "Played for 3 hours, mostly rallying and practice sets.",
-      "matches": [],
-      "sessionLeaderboard": {},
-      "aiSummary": ""
+      "type": "structured",
+      "duration": 2,
+      "playerCount": 4,
+      "playerIds": ["p1","p2","p3","p4"],
+      "matches": [
+        { "matchId": 1, "teamA": ["p1","p2"], "teamB": ["p3","p4"], "format": "First to 21", "winner": "B" },
+        { "matchId": 2, "teamA": ["p1","p3"], "teamB": ["p2","p4"], "format": "First to 21", "winner": "B" },
+        { "matchId": 3, "teamA": ["p1","p4"], "teamB": ["p2","p3"], "format": "First to 21", "winner": "A" },
+        { "matchId": 4, "teamA": ["p1","p2"], "teamB": ["p3","p4"], "format": "First to 21", "winner": "A" },
+        { "matchId": 5, "teamA": ["p1","p3"], "teamB": ["p2","p4"], "format": "First to 21", "winner": "B" },
+        { "matchId": 6, "teamA": ["p1","p4"], "teamB": ["p2","p3"], "format": "First to 21", "winner": "A" },
+        { "matchId": 7, "teamA": ["p2","p4"], "teamB": ["p1","p3"], "format": "First to 21", "winner": "A" },
+        { "matchId": 8, "teamA": ["p2","p3"], "teamB": ["p1","p4"], "format": "First to 21", "winner": "B" }
+      ],
+      "sessionLeaderboard": { "mvp": "p4", "bestDuo": "p2_p4" },
+      "aiSummary": "Rajeev and Bhavya are built different — 5 combined wins and they made it look easy. Avinash almost staged a comeback in the last two but Rajeev had other plans. Malay is still searching for consistency but hey, he showed up, and that counts for something."
     },
     {
       "id": "s_20260720_001",
@@ -45,25 +77,33 @@
       "type": "structured",
       "duration": 1,
       "playerCount": 4,
-      "playerIds": ["p1", "p2", "p3", "p4"],
+      "playerIds": ["p1","p2","p3","p4"],
       "matches": [
-        { "matchId": 1, "teamA": ["p1", "p2"], "teamB": ["p3", "p4"], "format": "First to 21", "winner": "B" },
-        { "matchId": 2, "teamA": ["p1", "p3"], "teamB": ["p2", "p4"], "format": "First to 21", "winner": "B" },
-        { "matchId": 3, "teamA": ["p1", "p4"], "teamB": ["p2", "p3"], "format": "First to 21", "winner": "A" }
+        { "matchId": 1, "teamA": ["p1","p2"], "teamB": ["p3","p4"], "format": "First to 21", "winner": "A" },
+        { "matchId": 2, "teamA": ["p1","p3"], "teamB": ["p2","p4"], "format": "First to 21", "winner": "A" },
+        { "matchId": 3, "teamA": ["p1","p4"], "teamB": ["p2","p3"], "format": "First to 21", "winner": "B" },
+        { "matchId": 4, "teamA": ["p1","p2"], "teamB": ["p3","p4"], "format": "First to 21", "winner": "A" }
       ],
-      "sessionLeaderboard": { "mvp": "p4", "bestDuo": "p2_p4" },
-      "aiSummary": "Rajeev and Bhavya are officially the dynamic duo of the week — nobody could stop them! Avinash, buddy, three matches and only one W? The court called, it wants its champion back. Malay stayed consistent which is honestly the most we can say."
+      "sessionLeaderboard": { "mvp": "p1", "bestDuo": "p1_p2" },
+      "aiSummary": "Quick one-hour session and Avinash came out swinging! Avinash and Bhavya were the unstoppable pair today. Rajeev tried to flip the script in match 3 but Malay couldn't hold up his end. Short and sweet — but the standings don't lie."
     },
     {
-      "id": "s_20260727_planned",
-      "date": "2026-08-03",
+      "id": "s_20260727_001",
+      "date": "2026-07-27",
       "type": "structured",
       "duration": 2,
       "playerCount": 4,
-      "playerIds": ["p1", "p2", "p3", "p4"],
-      "matches": [],
-      "sessionLeaderboard": {},
-      "aiSummary": ""
+      "playerIds": ["p1","p2","p3","p4"],
+      "matches": [
+        { "matchId": 1, "teamA": ["p1","p2"], "teamB": ["p3","p4"], "format": "First to 21", "winner": "B" },
+        { "matchId": 2, "teamA": ["p1","p3"], "teamB": ["p2","p4"], "format": "First to 21", "winner": "A" },
+        { "matchId": 3, "teamA": ["p1","p4"], "teamB": ["p2","p3"], "format": "First to 21", "winner": "B" },
+        { "matchId": 4, "teamA": ["p1","p2"], "teamB": ["p3","p4"], "format": "First to 21", "winner": "A" },
+        { "matchId": 5, "teamA": ["p1","p3"], "teamB": ["p2","p4"], "format": "First to 21", "winner": "A" },
+        { "matchId": 6, "teamA": ["p1","p4"], "teamB": ["p2","p3"], "format": "First to 21", "winner": "A" }
+      ],
+      "sessionLeaderboard": { "mvp": "p1", "bestDuo": "p1_p3" },
+      "aiSummary": "Today's session — fresh data, fresh drama. More to come."
     }
   ]
 }
