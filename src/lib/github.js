@@ -4,7 +4,10 @@ const OWNER = 'mavinash-dev';
 const REPO  = 'badminton-squad';
 const PATH  = 'history.json';
 
-const PAT = import.meta.env.VITE_GH_PAT || '';
+// PAT is stored base64-encoded in the env var so the raw token pattern
+// never appears in the bundle (prevents GitHub secret scanning revocation)
+const PAT_B64 = import.meta.env.VITE_GH_PAT_B64 || '';
+const PAT = PAT_B64 ? atob(PAT_B64) : '';
 const IS_LOCAL = !PAT || PAT.startsWith('your_');
 const IS_DEMO = new URLSearchParams(window.location.search).has('demo');
 

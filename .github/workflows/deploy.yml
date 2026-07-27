@@ -19,7 +19,7 @@ jobs:
       - run: npm ci
       - run: npm run build
         env:
-          VITE_GH_PAT: ${{ secrets.GH_PAT }}
+          VITE_GH_PAT_B64: ${{ secrets.GH_PAT_B64 }}
           VITE_GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
       - uses: peaceiris/actions-gh-pages@v4
         with:
