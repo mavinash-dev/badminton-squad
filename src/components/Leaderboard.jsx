@@ -18,7 +18,7 @@ function WinBar({ rate }) {
   );
 }
 
-export default function Leaderboard({ onBack }) {
+export default function Leaderboard({ onBack, onPlayerClick }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -69,7 +69,8 @@ export default function Leaderboard({ onBack }) {
             <div
               key={p.id}
               className={`card ${isMvp ? 'mvp-card' : ''}`}
-              style={{ animationDelay: `${i * 70}ms` }}
+              style={{ animationDelay: `${i * 70}ms`, cursor: onPlayerClick ? 'pointer' : 'default' }}
+              onClick={() => onPlayerClick?.(p.id)}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ fontSize: isMvp ? 24 : 16, minWidth: 28 }}>

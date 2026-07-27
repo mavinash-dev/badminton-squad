@@ -9,7 +9,7 @@ export function Avatar({ player, size = 36, border = true }) {
     <div style={{
       width: size, height: size, borderRadius: '50%',
       overflow: 'hidden', flexShrink: 0,
-      border: border ? `2px solid var(--surface)` : 'none',
+      border: border ? `1.5px solid var(--border)` : 'none',
       background: player.color,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       boxShadow: '0 1px 4px rgba(44,36,22,.15)',

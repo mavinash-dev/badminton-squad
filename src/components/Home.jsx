@@ -110,7 +110,7 @@ function SessionRow({ session, isLast }) {
   );
 }
 
-export default function Home({ history, loading, today, onNewSession, onCasual, onViewHistory, onViewLeaderboard }) {
+export default function Home({ history, loading, onNewSession, onCasual, onViewHistory, onViewLeaderboard, onPlayerClick }) {
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '80px 16px' }}>
@@ -169,14 +169,16 @@ export default function Home({ history, loading, today, onNewSession, onCasual, 
             The throne is unclaimed. The deadliest pair unknown.<br />
             Glory awaits those who step onto the court.
           </div>
-          <button className="btn-primary" style={{ justifyContent: 'center', margin: '0 auto' }} onClick={() => onNewSession(today)}>
+          <button className="btn-primary" style={{ justifyContent: 'center', margin: '0 auto' }} onClick={onNewSession}>
             Start the First Battle
           </button>
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 14, marginBottom: 28 }}>
           {topPlayer
-            ? <ChampionCard player={SQUAD.find(p => p.id === topPlayer.id)} wins={topPlayer.wins} games={topPlayer.games} />
+            ? <div onClick={() => onPlayerClick?.(topPlayer.id)} style={{ flex: 1, cursor: 'pointer' }}>
+                <ChampionCard player={SQUAD.find(p => p.id === topPlayer.id)} wins={topPlayer.wins} games={topPlayer.games} />
+              </div>
             : <div className="card" style={{ flex: 1, textAlign: 'center', padding: '24px 14px' }}>
                 <ThroneIcon size={32} color="var(--fg-muted)" style={{ margin: '0 auto 10px', opacity: 0.25 }} />
                 <div style={{ color: 'var(--fg-muted)', fontSize: 13 }}>Throne unclaimed</div>
@@ -195,7 +197,7 @@ export default function Home({ history, loading, today, onNewSession, onCasual, 
       {/* CTAs */}
       {!noData && (
         <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
-          <button className="btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: 15, padding: '13px 0' }} onClick={() => onNewSession(today)}>
+          <button className="btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: 15, padding: '13px 0' }} onClick={onNewSession}>
             New Battle
           </button>
           <button className="btn-secondary" style={{ flex: 1, fontSize: 15 }} onClick={() => onCasual(today)}>

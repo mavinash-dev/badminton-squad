@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Icon } from '@iconify/react';
 import SessionHistory from './components/SessionHistory';
 import Home from './components/Home';
 import Setup from './components/Setup';
@@ -7,7 +8,9 @@ import MatchLogger from './components/MatchLogger';
 import Results from './components/Results';
 import Leaderboard from './components/Leaderboard';
 import CasualLog from './components/CasualLog';
-import { ShuttleTransition, ShuttlecockSVG } from './components/Animations';
+import CasualDatePicker from './components/CasualDatePicker';
+import PlayerProfile from './components/PlayerProfile';
+import { ShuttleTransition } from './components/Animations';
 import Background from './components/Background';
 import { generateSchedule } from './lib/grok';
 import { generateMatches } from './lib/tournament';
@@ -21,9 +24,11 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   // Modal states
-  const [setupDate, setSetupDate] = useState(null);
+  const [showSetup, setShowSetup] = useState(false);
+  const [showCasualPicker, setShowCasualPicker] = useState(false);
   const [casualDate, setCasualDate] = useState(null);
   const [loggingMatchId, setLoggingMatchId] = useState(null);
+  const [profilePlayerId, setProfilePlayerId] = useState(null);
 
   // Shared session flow state
   const [sessionPlayers, setSessionPlayers] = useState([]);
@@ -57,7 +62,7 @@ export default function App() {
 
   // --- Structured session flow ---
   async function handleGenerate({ players, matchCount, hours, date }) {
-    setSetupDate(null);
+    setShowSetup(false);
     setSessionPlayers(players);
     setSessionDate(date);
     setSessionType('structured');
@@ -91,6 +96,11 @@ export default function App() {
   }
 
   // --- Casual session ---
+  function handleCasualDatePicked(date) {
+    setShowCasualPicker(false);
+    setCasualDate(date);
+  }
+
   function handleCasualProceed({ players, matches: casualMatches }) {
     setCasualDate(null);
     setSessionPlayers(players);
@@ -120,7 +130,6 @@ export default function App() {
   }
 
   const logMatch = loggingMatchId !== null ? matches.find(m => m.matchId === loggingMatchId) : null;
-  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="app-root">
@@ -129,15 +138,14 @@ export default function App() {
 
       <header style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '18px 20px 0',
-        maxWidth: 640, margin: '0 auto',
+        padding: '18px 20px 0', maxWidth: 640, margin: '0 auto',
       }}>
         <button
           onClick={() => { shuttle(); setView('home'); }}
-          style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
-          <ShuttlecockSVG style={{ width: 30, height: 30 }} />
-          <span style={{ fontWeight: 800, fontSize: 18, color: 'var(--fg)', letterSpacing: '-.3px' }}>
+          <Icon icon="game-icons:shuttlecock" width={28} height={28} color="var(--green)" />
+          <span style={{ fontWeight: 800, fontSize: 17, color: 'var(--fg)', letterSpacing: '-.3px' }}>
             Badminton Squad
           </span>
         </button>
@@ -153,10 +161,11 @@ export default function App() {
           )}
           <button
             className="btn-primary"
-            style={{ fontSize: 13, padding: '7px 16px' }}
-            onClick={() => setSetupDate(today)}
+            style={{ fontSize: 13, padding: '7px 16px', gap: 6 }}
+            onClick={() => setShowSetup(true)}
           >
-            + Session
+            <Icon icon="game-icons:crossed-axes" width={15} height={15} color="#07070d" />
+            New Battle
           </button>
         </div>
       </header>
@@ -167,11 +176,11 @@ export default function App() {
           <Home
             history={history}
             loading={loading}
-            today={today}
-            onNewSession={date => setSetupDate(date)}
-            onCasual={date => setCasualDate(date)}
+            onNewSession={() => setShowSetup(true)}
+            onCasual={() => setShowCasualPicker(true)}
             onViewHistory={() => { shuttle(); setView('calendar'); }}
             onViewLeaderboard={() => { shuttle(); setView('leaderboard'); }}
+            onPlayerClick={id => setProfilePlayerId(id)}
           />
         )}
 
@@ -200,12 +209,32 @@ export default function App() {
           />
         )}
 
-        {view === 'leaderboard' && <Leaderboard sessions={history.sessions} onBack={() => setView('home')} />}
+        {view === 'leaderboard' && (
+          <Leaderboard
+            sessions={history.sessions}
+            onBack={() => setView('home')}
+            onPlayerClick={id => setProfilePlayerId(id)}
+          />
+        )}
+
+        {profilePlayerId && (
+          <div style={{ position: 'fixed', inset: 0, background: 'var(--canvas)', zIndex: 40, overflowY: 'auto', paddingTop: 24 }}>
+            <PlayerProfile
+              playerId={profilePlayerId}
+              history={history}
+              onBack={() => setProfilePlayerId(null)}
+            />
+          </div>
+        )}
       </div>
 
       {/* Modals */}
-      {setupDate && (
-        <Setup date={setupDate} onGenerate={handleGenerate} onClose={() => setSetupDate(null)} />
+      {showSetup && (
+        <Setup onGenerate={handleGenerate} onClose={() => setShowSetup(false)} />
+      )}
+
+      {showCasualPicker && (
+        <CasualDatePicker onPick={handleCasualDatePicked} onClose={() => setShowCasualPicker(false)} />
       )}
 
       {casualDate && (
