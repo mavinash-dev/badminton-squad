@@ -49,9 +49,11 @@ export async function generateSummary({ players, matches, sessionLeaderboard }) 
 
   return call(
     'You are an energetic sports commentator for a friends badminton group. Be hype, casual, funny, and a little savage. 3 sentences max. No markdown.',
-    `Match results: ${JSON.stringify(matches.map(m => ({ teamA: m.teamA.map(id => players.find(p=>p.id===id)?.name||id), teamB: m.teamB.map(id => players.find(p=>p.id===id)?.name||id), winner: m.winner })))}.
+    `Players in this session: ${players.map(p => p.name).join(', ')}.
+Match results: ${JSON.stringify(matches.map(m => ({ teamA: m.teamA.map(id => players.find(p=>p.id===id)?.name||id), teamB: m.teamB.map(id => players.find(p=>p.id===id)?.name||id), winner: m.winner === 'A' ? m.teamA.map(id => players.find(p=>p.id===id)?.name||id) : m.winner === 'B' ? m.teamB.map(id => players.find(p=>p.id===id)?.name||id) : null })))}.
 ${mvpName ? `MVP: ${mvpName}.` : 'It was a tie — no clear MVP today.'}
 ${duoNames ? `Best duo: ${duoNames}.` : ''}
-Write a short hype wrap-up${mvpName ? ` declaring ${mvpName} the champion` : ' acknowledging the tie'}. Gently roast the losers. Keep it fun and friendly.`
+IMPORTANT: Always refer to players by their actual names (${players.map(p => p.name).join(', ')}). Never say "Player A", "the winner", "they", etc. — use names.
+Write a short hype wrap-up${mvpName ? ` declaring ${mvpName} the champion` : ' acknowledging the tie'}. Gently roast the losers by name. Keep it fun and friendly. 3 sentences max.`
   );
 }
