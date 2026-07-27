@@ -1,5 +1,6 @@
 import { BadmintonNet } from './Animations';
 import { SQUAD } from '../lib/players';
+import { Avatar } from './Avatar';
 
 function TeamPill({ ids }) {
   return (
@@ -9,18 +10,13 @@ function TeamPill({ ids }) {
         if (!p) return <span key={id}>{id}</span>;
         return (
           <span key={id} style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: `${p.color}18`, color: p.color,
-            border: `1.5px solid ${p.color}35`,
-            borderRadius: 8, padding: '4px 10px',
-            fontSize: 13, fontWeight: 700,
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            background: `${p.color}12`,
+            border: `1.5px solid ${p.color}40`,
+            borderRadius: 10, padding: '5px 10px 5px 5px',
+            fontSize: 13, fontWeight: 700, color: p.color,
           }}>
-            <span style={{
-              width: 20, height: 20, borderRadius: '50%',
-              background: p.color, color: p.textColor || '#f5f0e8',
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 9, fontWeight: 800,
-            }}>{p.initials}</span>
+            <Avatar player={p} size={22} border={false} />
             {p.name}
           </span>
         );

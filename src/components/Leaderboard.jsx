@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { readHistory } from '../lib/github';
 import { calcLeaderboard } from '../lib/tournament';
 import { SQUAD } from '../lib/players';
+import { Avatar } from './Avatar';
 
 function WinBar({ rate }) {
   return (
@@ -72,12 +73,7 @@ export default function Leaderboard({ onBack }) {
                 <span style={{ fontSize: isMvp ? 24 : 16, minWidth: 28 }}>
                   {['🥇','🥈','🥉'][i] || `#${i+1}`}
                 </span>
-                <div style={{
-                  width: 40, height: 40, borderRadius: '50%',
-                  background: squad?.color, color: squad?.textColor || '#f5f0e8',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 14, fontWeight: 800, flexShrink: 0,
-                }}>{squad?.initials}</div>
+                {squad && <Avatar player={squad} size={42} border={false} />}
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: 15 }}>{p.name}</div>
                   <WinBar rate={p.winRate} />
@@ -113,16 +109,11 @@ export default function Leaderboard({ onBack }) {
                 <div style={{ display: 'flex', marginRight: 4 }}>
                   {ids.map((id, j) => {
                     const sq = SQUAD.find(p => p.id === id);
-                    return (
-                      <div key={id} style={{
-                        width: 32, height: 32, borderRadius: '50%',
-                        background: sq?.color, color: sq?.textColor || '#f5f0e8',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 11, fontWeight: 800,
-                        marginLeft: j > 0 ? -8 : 0,
-                        border: '2px solid var(--surface)',
-                      }}>{sq?.initials}</div>
-                    );
+                    return sq ? (
+                      <div key={id} style={{ marginLeft: j > 0 ? -8 : 0 }}>
+                        <Avatar player={sq} size={32} />
+                      </div>
+                    ) : null;
                   })}
                 </div>
                 <div style={{ flex: 1 }}>

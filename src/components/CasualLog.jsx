@@ -1,51 +1,61 @@
 import { useState } from 'react';
 import { SQUAD } from '../lib/players';
+import { Avatar } from './Avatar';
 
-const PLAYER_COLORS = Object.fromEntries(SQUAD.map(p => [p.id, p]));
-
-function PlayerChip({ player, selected, onClick, disabled }) {
+// --- Player selector chip ---
+function PlayerChip({ player, onSelect }) {
   return (
     <button
-      onClick={onClick}
-      disabled={disabled}
+      onClick={() => onSelect(player.id)}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: 7,
-        border: `2px solid ${selected ? player.color : 'var(--border)'}`,
-        background: selected ? `${player.color}18` : 'var(--elevated)',
-        borderRadius: 10, padding: '7px 12px',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.4 : 1,
-        transition: 'all .15s',
+        border: '1.5px solid var(--border)',
+        background: 'var(--elevated)',
+        borderRadius: 10, padding: '6px 12px 6px 6px',
+        cursor: 'pointer', transition: 'all .15s',
         fontFamily: 'Nunito, sans-serif',
       }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = player.color; e.currentTarget.style.background = `${player.color}12`; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--elevated)'; }}
     >
-      <div style={{
-        width: 24, height: 24, borderRadius: '50%',
-        background: player.color, color: player.textColor || '#f5f0e8',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 9, fontWeight: 800,
-      }}>{player.initials}</div>
-      <span style={{ fontSize: 13, fontWeight: 700, color: selected ? player.color : 'var(--fg-muted)' }}>
-        {player.name}
-      </span>
+      <Avatar player={player} size={22} border={false} />
+      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--fg-body)' }}>{player.name}</span>
     </button>
   );
 }
 
+// --- Assigned player in a team slot ---
+function AssignedPlayer({ player, onRemove }) {
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 7,
+      border: `2px solid ${player.color}`,
+      background: `${player.color}15`,
+      borderRadius: 10, padding: '6px 8px 6px 6px',
+    }}>
+      <Avatar player={player} size={22} border={false} />
+      <span style={{ fontSize: 13, fontWeight: 700, color: player.color }}>{player.name}</span>
+      <button
+        onClick={onRemove}
+        style={{ background: 'none', border: 'none', cursor: 'pointer', color: player.color, fontSize: 16, lineHeight: 1, padding: '0 2px', opacity: .7 }}
+      >×</button>
+    </div>
+  );
+}
+
+// --- Match builder: pick team A then team B ---
 function MatchBuilder({ squadIds, onAdd }) {
   const [teamA, setTeamA] = useState([]);
   const [teamB, setTeamB] = useState([]);
 
   const squad = SQUAD.filter(p => squadIds.includes(p.id));
+  const taken = [...teamA, ...teamB];
+  const available = squad.filter(p => !taken.includes(p.id));
 
-  function toggleA(id) {
-    if (teamB.includes(id)) return;
-    setTeamA(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  }
-  function toggleB(id) {
-    if (teamA.includes(id)) return;
-    setTeamB(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  }
+  function addToA(id) { setTeamA(prev => [...prev, id]); }
+  function addToB(id) { setTeamB(prev => [...prev, id]); }
+  function removeFromA(id) { setTeamA(prev => prev.filter(x => x !== id)); }
+  function removeFromB(id) { setTeamB(prev => prev.filter(x => x !== id)); }
 
   const canAdd = teamA.length >= 1 && teamB.length >= 1;
 
@@ -56,39 +66,52 @@ function MatchBuilder({ squadIds, onAdd }) {
     setTeamB([]);
   }
 
+  const teamAFull = teamA.length >= 2;
+  const teamBFull = teamB.length >= 2;
+
   return (
-    <div style={{ background: 'var(--canvas)', borderRadius: 12, padding: 16, border: '1.5px dashed var(--border)' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--fg-muted)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 12 }}>
-        Add a match
+    <div style={{ background: 'var(--canvas)', borderRadius: 14, padding: 16, border: '1.5px dashed var(--border)' }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--fg-muted)', textTransform: 'uppercase', letterSpacing: '.1em', marginBottom: 14 }}>
+        Build a match
       </div>
 
-      <div style={{ marginBottom: 10 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-muted)', marginBottom: 6 }}>Team A</div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {squad.map(p => (
-            <PlayerChip
-              key={p.id} player={p}
-              selected={teamA.includes(p.id)}
-              onClick={() => toggleA(p.id)}
-              disabled={teamB.includes(p.id)}
-            />
+      {/* Team A */}
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-muted)', marginBottom: 8 }}>
+          Team A {teamA.length > 0 && <span style={{ color: 'var(--green)', marginLeft: 4 }}>({teamA.map(id => SQUAD.find(p=>p.id===id)?.name).join(' & ')})</span>}
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', minHeight: 36, alignItems: 'center' }}>
+          {teamA.map(id => {
+            const p = SQUAD.find(q => q.id === id);
+            return p ? <AssignedPlayer key={id} player={p} onRemove={() => removeFromA(id)} /> : null;
+          })}
+          {!teamAFull && available.map(p => (
+            <PlayerChip key={p.id} player={p} onSelect={addToA} />
           ))}
+          {teamA.length === 0 && available.length === 0 && (
+            <span style={{ fontSize: 12, color: 'var(--fg-muted)' }}>All players assigned</span>
+          )}
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', fontSize: 13, fontWeight: 800, color: 'var(--fg-muted)', margin: '8px 0' }}>vs</div>
+      <div style={{ textAlign: 'center', fontSize: 12, fontWeight: 800, color: 'var(--fg-muted)', margin: '8px 0' }}>vs</div>
 
+      {/* Team B */}
       <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-muted)', marginBottom: 6 }}>Team B</div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {squad.map(p => (
-            <PlayerChip
-              key={p.id} player={p}
-              selected={teamB.includes(p.id)}
-              onClick={() => toggleB(p.id)}
-              disabled={teamA.includes(p.id)}
-            />
+        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-muted)', marginBottom: 8 }}>
+          Team B {teamB.length > 0 && <span style={{ color: 'var(--green)', marginLeft: 4 }}>({teamB.map(id => SQUAD.find(p=>p.id===id)?.name).join(' & ')})</span>}
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', minHeight: 36, alignItems: 'center' }}>
+          {teamB.map(id => {
+            const p = SQUAD.find(q => q.id === id);
+            return p ? <AssignedPlayer key={id} player={p} onRemove={() => removeFromB(id)} /> : null;
+          })}
+          {!teamBFull && available.map(p => (
+            <PlayerChip key={p.id} player={p} onSelect={addToB} />
           ))}
+          {teamB.length === 0 && available.length === 0 && teamA.length > 0 && (
+            <span style={{ fontSize: 12, color: 'var(--fg-muted)' }}>Remove a player from Team A first</span>
+          )}
         </div>
       </div>
 
@@ -104,12 +127,11 @@ function MatchBuilder({ squadIds, onAdd }) {
   );
 }
 
+// --- Logged match card ---
 function MatchCard({ match, index, onSetWinner, onRemove }) {
-  const teamAPlayers = match.teamA.map(id => PLAYER_COLORS[id]).filter(Boolean);
-  const teamBPlayers = match.teamB.map(id => PLAYER_COLORS[id]).filter(Boolean);
-
   function TeamBtn({ ids, side }) {
     const isWinner = match.winner === side;
+    const isLoser = match.winner && !isWinner;
     const names = ids.map(id => SQUAD.find(p => p.id === id)?.name || id);
     return (
       <button
@@ -120,26 +142,23 @@ function MatchCard({ match, index, onSetWinner, onRemove }) {
           border: `2px solid ${isWinner ? 'var(--green)' : 'var(--border)'}`,
           background: isWinner ? 'var(--green-bg)' : 'var(--canvas)',
           cursor: match.winner ? 'default' : 'pointer',
+          opacity: isLoser ? 0.45 : 1,
           transition: 'all .15s',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
         }}
       >
-        <div style={{ display: 'flex', gap: 2 }}>
-          {ids.map(id => {
-            const p = PLAYER_COLORS[id];
+        <div style={{ display: 'flex', gap: -4 }}>
+          {ids.map((id, i) => {
+            const p = SQUAD.find(q => q.id === id);
             return p ? (
-              <div key={id} style={{
-                width: 22, height: 22, borderRadius: '50%',
-                background: p.color, color: p.textColor || '#f5f0e8',
-                fontSize: 8, fontWeight: 800,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>{p.initials}</div>
+              <div key={id} style={{ marginLeft: i > 0 ? -6 : 0 }}>
+                <Avatar player={p} size={26} />
+              </div>
             ) : null;
           })}
         </div>
         <span style={{ fontSize: 12, fontWeight: 700, color: isWinner ? 'var(--green)' : 'var(--fg-body)' }}>
-          {names.join(' & ')}
-          {isWinner && ' 🏆'}
+          {names.join(' & ')}{isWinner && ' ✓'}
         </span>
       </button>
     );
@@ -147,9 +166,8 @@ function MatchCard({ match, index, onSetWinner, onRemove }) {
 
   return (
     <div style={{
-      background: 'var(--surface)', border: '1.5px solid var(--border)',
+      background: 'var(--surface)', border: `1.5px solid ${match.winner ? 'rgba(45,106,79,.3)' : 'var(--border)'}`,
       borderRadius: 12, padding: '12px 14px',
-      borderColor: match.winner ? 'rgba(45,106,79,.3)' : 'var(--border)',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
         <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--fg-muted)', textTransform: 'uppercase', letterSpacing: '.08em' }}>
@@ -158,13 +176,16 @@ function MatchCard({ match, index, onSetWinner, onRemove }) {
         {!match.winner && (
           <button
             onClick={() => onRemove(index)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 16, padding: '0 2px', lineHeight: 1 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 18, padding: '0 2px', lineHeight: 1 }}
           >×</button>
         )}
+        {match.winner && (
+          <span style={{ fontSize: 11, color: 'var(--green)', fontWeight: 700 }}>Logged ✓</span>
+        )}
       </div>
-      <div style={{ display: 'flex', gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <TeamBtn ids={match.teamA} side="A" />
-        <div style={{ display: 'flex', alignItems: 'center', fontSize: 11, fontWeight: 800, color: 'var(--fg-muted)' }}>vs</div>
+        <div style={{ fontSize: 11, fontWeight: 800, color: 'var(--fg-muted)', flexShrink: 0 }}>vs</div>
         <TeamBtn ids={match.teamB} side="B" />
       </div>
       {!match.winner && (
@@ -176,8 +197,9 @@ function MatchCard({ match, index, onSetWinner, onRemove }) {
   );
 }
 
+// --- Main component ---
 export default function CasualLog({ date, onProceed, onClose }) {
-  const [step, setStep] = useState('players'); // players | matches
+  const [step, setStep] = useState('players');
   const [squadIds, setSquadIds] = useState(SQUAD.map(p => p.id));
   const [matches, setMatches] = useState([]);
 
@@ -192,7 +214,12 @@ export default function CasualLog({ date, onProceed, onClose }) {
   }
 
   function addMatch({ teamA, teamB }) {
-    setMatches(prev => [...prev, { matchId: prev.length + 1, teamA, teamB, format: 'Casual', winner: null }]);
+    setMatches(prev => [...prev, {
+      matchId: prev.length + 1,
+      teamA, teamB,
+      format: 'Casual',
+      winner: null,
+    }]);
   }
 
   function setWinner(index, side) {
@@ -208,19 +235,18 @@ export default function CasualLog({ date, onProceed, onClose }) {
   const canFinish = matches.length > 0 && loggedCount === matches.length;
 
   const displayDate = new Date(date + 'T12:00:00').toLocaleDateString('en-IN', {
-    weekday: 'long', day: 'numeric', month: 'long'
+    weekday: 'long', day: 'numeric', month: 'long',
   });
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(245,240,232,.90)',
+      position: 'fixed', inset: 0, background: 'rgba(245,240,232,.92)',
       display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-      zIndex: 50, padding: '16px 16px', overflowY: 'auto',
+      zIndex: 50, padding: '16px', overflowY: 'auto',
       backdropFilter: 'blur(6px)',
     }}>
       <div className="card" style={{ width: '100%', maxWidth: 480, padding: 26, animation: 'fadeUp .25s ease both', marginTop: 16 }}>
 
-        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <div style={{ fontWeight: 800, fontSize: 20 }}>🎾 Casual Play</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 22, lineHeight: 1 }}>×</button>
@@ -230,7 +256,7 @@ export default function CasualLog({ date, onProceed, onClose }) {
         {step === 'players' ? (
           <>
             <div className="section-label">Who's playing?</div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
               {SQUAD.map(p => (
                 <button
                   key={p.id}
@@ -245,14 +271,13 @@ export default function CasualLog({ date, onProceed, onClose }) {
                   }}
                 >
                   <div style={{
-                    width: 48, height: 48, borderRadius: '50%',
-                    background: p.color, color: p.textColor || '#f5f0e8',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 17, fontWeight: 800,
                     opacity: squadIds.includes(p.id) ? 1 : 0.35,
-                    boxShadow: squadIds.includes(p.id) ? `0 3px 12px ${p.color}40` : 'none',
-                    transition: 'all .15s',
-                  }}>{p.initials}</div>
+                    transition: 'opacity .15s',
+                    boxShadow: squadIds.includes(p.id) ? `0 3px 12px ${p.color}45` : 'none',
+                    borderRadius: '50%',
+                  }}>
+                    <Avatar player={p} size={52} border={false} />
+                  </div>
                   <span style={{ fontSize: 13, fontWeight: 700, color: squadIds.includes(p.id) ? 'var(--fg)' : 'var(--fg-muted)' }}>
                     {p.name}
                   </span>
@@ -270,22 +295,19 @@ export default function CasualLog({ date, onProceed, onClose }) {
           </>
         ) : (
           <>
-            {/* Players summary */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-              {players.map(p => (
-                <div key={p.id} style={{
-                  width: 30, height: 30, borderRadius: '50%',
-                  background: p.color, color: p.textColor || '#f5f0e8',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 10, fontWeight: 800,
-                }}>{p.initials}</div>
+            {/* Players summary row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
+              {players.map((p, i) => (
+                <div key={p.id} style={{ marginLeft: i > 0 ? -8 : 0 }}>
+                  <Avatar player={p} size={30} />
+                </div>
               ))}
-              <span style={{ fontSize: 13, color: 'var(--fg-muted)', fontWeight: 600, marginLeft: 4 }}>
-                {loggedCount}/{matches.length} matches logged
+              <span style={{ fontSize: 13, color: 'var(--fg-muted)', fontWeight: 600, marginLeft: 6 }}>
+                {loggedCount}/{matches.length} logged
               </span>
             </div>
 
-            {/* Match list */}
+            {/* Logged matches */}
             {matches.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 }}>
                 {matches.map((m, i) => (
@@ -294,12 +316,11 @@ export default function CasualLog({ date, onProceed, onClose }) {
               </div>
             )}
 
-            {/* Add match builder */}
+            {/* Add match */}
             <div style={{ marginBottom: 20 }}>
               <MatchBuilder squadIds={squadIds} onAdd={addMatch} />
             </div>
 
-            {/* Actions */}
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 className="btn-primary"
@@ -307,13 +328,13 @@ export default function CasualLog({ date, onProceed, onClose }) {
                 onClick={() => canFinish && onProceed({ players, matches })}
                 disabled={!canFinish}
               >
-                View Results →
+                Done — View Results →
               </button>
-              <button className="btn-secondary" onClick={() => setStep('players')}>← Players</button>
+              <button className="btn-secondary" onClick={() => setStep('players')}>← Back</button>
             </div>
             {!canFinish && matches.length > 0 && (
               <p style={{ fontSize: 12, color: 'var(--fg-muted)', textAlign: 'center', marginTop: 8 }}>
-                Log winners for all matches to continue
+                Log all match winners first
               </p>
             )}
           </>

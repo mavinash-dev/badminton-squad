@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { SQUAD } from '../lib/players';
 import { RacketSVG } from './Animations';
+import { Avatar } from './Avatar';
 
 function PlayerToggle({ player, selected, onToggle }) {
   return (
@@ -16,16 +17,12 @@ function PlayerToggle({ player, selected, onToggle }) {
       }}
     >
       <div style={{
-        width: 52, height: 52, borderRadius: '50%',
-        background: player.color,
-        color: player.textColor || '#f5f0e8',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 18, fontWeight: 800,
-        opacity: selected ? 1 : 0.38,
-        transition: 'opacity .15s, box-shadow .15s',
-        boxShadow: selected ? `0 3px 12px ${player.color}45` : 'none',
+        opacity: selected ? 1 : 0.35,
+        transition: 'opacity .15s',
+        boxShadow: selected ? `0 3px 14px ${player.color}45` : 'none',
+        borderRadius: '50%',
       }}>
-        {player.initials}
+        <Avatar player={player} size={52} border={false} />
       </div>
       <span style={{ fontSize: 13, fontWeight: 700, color: selected ? 'var(--fg)' : 'var(--fg-muted)', transition: 'color .15s' }}>
         {player.name}

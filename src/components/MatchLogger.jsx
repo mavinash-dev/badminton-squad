@@ -1,49 +1,41 @@
 import { useState } from 'react';
-import { Confetti } from './Animations';
 import { SQUAD } from '../lib/players';
+import { Avatar } from './Avatar';
 
 function TeamButton({ ids, side, winner, onSelect }) {
   const isWinner = winner === side;
+  const isLoser = winner && winner !== side;
+
   return (
     <button
       onClick={() => !winner && onSelect(side)}
       disabled={!!winner}
       style={{
-        flex: 1, padding: '22px 12px',
+        flex: 1, padding: '18px 10px',
         borderRadius: 16,
-        border: `2px solid ${isWinner ? 'var(--green)' : 'var(--border)'}`,
+        border: `2px solid ${isWinner ? 'var(--green)' : isLoser ? 'var(--border)' : 'var(--border)'}`,
         background: isWinner ? 'var(--green-bg)' : 'var(--canvas)',
         cursor: winner ? 'default' : 'pointer',
         transition: 'all .2s',
+        opacity: isLoser ? 0.45 : 1,
         transform: isWinner ? 'scale(1.03)' : 'scale(1)',
       }}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
         {ids.map(id => {
           const p = SQUAD.find(q => q.id === id);
           if (!p) return null;
           return (
             <div key={id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: '50%',
-                background: p.color, color: p.textColor || '#f5f0e8',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 15, fontWeight: 800,
-                opacity: !winner || isWinner ? 1 : 0.4,
-                transition: 'opacity .2s',
-              }}>
-                {p.initials}
-              </div>
-              <span style={{ fontSize: 14, fontWeight: 700, color: isWinner ? 'var(--green)' : 'var(--fg)' }}>
+              <Avatar player={p} size={44} border={false} />
+              <span style={{ fontSize: 13, fontWeight: 700, color: isWinner ? 'var(--green)' : 'var(--fg)' }}>
                 {p.name}
               </span>
             </div>
           );
         })}
         {isWinner && (
-          <span className="scale-pop" style={{ marginTop: 6, fontSize: 13, color: 'var(--green)', fontWeight: 800 }}>
-            Winner! 🏆
-          </span>
+          <div className="scale-pop" style={{ marginTop: 4, fontSize: 18 }}>✓</div>
         )}
       </div>
     </button>
@@ -55,28 +47,28 @@ export default function MatchLogger({ match, onLog, onClose }) {
 
   function handleSelect(side) {
     setWinner(side);
-    setTimeout(() => onLog(match.matchId, side), 1200);
+    // Short pause so user sees the checkmark, then auto-close
+    setTimeout(() => onLog(match.matchId, side), 700);
   }
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(245,240,232,.88)',
+      position: 'fixed', inset: 0, background: 'rgba(245,240,232,.90)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 50, padding: 16, backdropFilter: 'blur(6px)',
     }}>
-      <div className="card" style={{ width: '100%', maxWidth: 440, position: 'relative', padding: 28, animation: 'fadeUp .25s ease both' }}>
-        {winner && <Confetti />}
-
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+      <div className="card" style={{ width: '100%', maxWidth: 400, padding: 26, animation: 'fadeUp .2s ease both' }}>
+        <div style={{ textAlign: 'center', marginBottom: 22 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--fg-muted)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 6 }}>
             Match {match.matchId}
           </div>
-          <div style={{ fontSize: 22, fontWeight: 800 }}>Who won?</div>
-          <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginTop: 4 }}>{match.format}</div>
+          <div style={{ fontSize: 20, fontWeight: 800 }}>Who won?</div>
+          <div style={{ fontSize: 12, color: 'var(--fg-muted)', marginTop: 3 }}>{match.format}</div>
         </div>
 
-        <div style={{ display: 'flex', gap: 12, marginBottom: 18 }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: winner ? 0 : 18 }}>
           <TeamButton ids={match.teamA} side="A" winner={winner} onSelect={handleSelect} />
+          <div style={{ display: 'flex', alignItems: 'center', fontSize: 12, fontWeight: 800, color: 'var(--fg-muted)', flexShrink: 0 }}>vs</div>
           <TeamButton ids={match.teamB} side="B" winner={winner} onSelect={handleSelect} />
         </div>
 
