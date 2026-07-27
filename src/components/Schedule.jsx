@@ -35,7 +35,7 @@ export default function Schedule({ matches, players, onLogWinner, onViewResults,
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: '24px 16px' }}>
+    <div style={{ maxWidth: 600, margin: '0 auto', padding: '24px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--fg-muted)', cursor: 'pointer', fontSize: 20, padding: '0 4px' }}>‹</button>
         <div style={{ fontWeight: 800, fontSize: 20, flex: 1 }}>Match Schedule</div>
@@ -49,7 +49,7 @@ export default function Schedule({ matches, players, onLogWinner, onViewResults,
         <BadmintonNet />
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {matches.map((m, i) => {
           const won = m.winner ? winnerNames(m) : null;
           return (
@@ -67,7 +67,14 @@ export default function Schedule({ matches, players, onLogWinner, onViewResults,
 
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <TeamPill ids={m.teamA} />
-                <span style={{ color: 'var(--fg-muted)', fontWeight: 800, fontSize: 13 }}>vs</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                  <span style={{ color: 'var(--fg-muted)', fontWeight: 800, fontSize: 13 }}>vs</span>
+                  {(m.teamA.length !== m.teamB.length) && (
+                    <span style={{ fontSize: 10, color: 'var(--fg-muted)', fontWeight: 600, marginTop: 2 }}>
+                      {m.teamA.length}v{m.teamB.length}
+                    </span>
+                  )}
+                </div>
                 <TeamPill ids={m.teamB} />
               </div>
 

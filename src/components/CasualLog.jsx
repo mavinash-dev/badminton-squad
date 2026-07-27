@@ -316,10 +316,25 @@ export default function CasualLog({ date, onProceed, onClose }) {
               </div>
             )}
 
-            {/* Add match */}
-            <div style={{ marginBottom: 20 }}>
-              <MatchBuilder squadIds={squadIds} onAdd={addMatch} />
-            </div>
+            {/* Add match — only shown when last match has a winner */}
+            {(matches.length === 0 || matches[matches.length - 1].winner) && (
+              <div style={{ marginBottom: 20 }}>
+                <MatchBuilder squadIds={squadIds} onAdd={addMatch} />
+              </div>
+            )}
+
+            {/* Prompt to log winner before adding next match */}
+            {matches.length > 0 && !matches[matches.length - 1].winner && (
+              <div style={{
+                marginBottom: 20, padding: '14px 16px',
+                background: 'var(--canvas)', border: '1.5px dashed var(--border)',
+                borderRadius: 14, textAlign: 'center',
+              }}>
+                <div style={{ fontSize: 13, color: 'var(--fg-muted)', fontWeight: 600 }}>
+                  Tap the winning team above to log the result, then add another match.
+                </div>
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: 10 }}>
               <button

@@ -40,6 +40,17 @@ Return exactly ${total} matches.`
   }
 }
 
+export async function generatePlayerRoast({ player, winRate, wins, games, sessions, mvpCount, bestPartner }) {
+  return call(
+    'You are a savage but lovable sports commentator for a friends badminton group. Be hype, funny, brutally honest. 2-3 sentences max. No markdown.',
+    `Write a personalized player card roast/hype for ${player.name}.
+Stats: ${wins} wins from ${games} matches (${winRate}% win rate), played ${sessions} sessions, MVP ${mvpCount} time${mvpCount !== 1 ? 's' : ''}.
+${bestPartner ? `Best partner: ${bestPartner}.` : 'No standout partner yet.'}
+If win rate is above 60%: hype them up but warn rivals. If 40-60%: backhanded compliment. Below 40%: roast them but keep it friendly.
+Always use their actual name: ${player.name}. 2-3 sentences only.`
+  );
+}
+
 export async function generateSummary({ players, matches, sessionLeaderboard }) {
   const mvpPlayer = sessionLeaderboard.mvp ? players.find(p => p.id === sessionLeaderboard.mvp) : null;
   const mvpName = mvpPlayer?.name || null;

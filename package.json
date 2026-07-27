@@ -10,6 +10,8 @@
     "deploy": "npm run build && gh-pages -d dist"
   },
   "dependencies": {
+    "@iconify-json/game-icons": "^1.2.4",
+    "@iconify/react": "^6.0.2",
     "@octokit/rest": "^22.0.1",
     "gh-pages": "^6.3.0",
     "groq-sdk": "^1.4.0",

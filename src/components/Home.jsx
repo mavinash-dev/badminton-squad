@@ -112,7 +112,7 @@ function SessionRow({ session, isLast }) {
 export default function Home({ history, loading, onNewSession, onCasual, onViewHistory, onViewLeaderboard, onPlayerClick }) {
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '80px 16px' }}>
+      <div style={{ textAlign: 'center', padding: '100px 16px' }}>
         <ThroneIcon size={48} color="var(--green)" style={{ margin: '0 auto 20px', opacity: 0.3 }} />
         <div style={{ color: 'var(--fg-muted)', fontSize: 15 }}>Summoning the war records…</div>
       </div>
@@ -132,21 +132,21 @@ export default function Home({ history, loading, onNewSession, onCasual, onViewH
   const tagline = TAGLINES[Math.floor(Math.random() * TAGLINES.length)];
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px 48px' }}>
+    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 20px 64px' }}>
 
-      {/* Hero — no redundant label, header already shows app name */}
-      <div style={{ marginBottom: 28, paddingTop: 4 }}>
-        <div style={{ fontWeight: 800, fontSize: 26, color: 'var(--fg)', marginBottom: 8, letterSpacing: '-.4px', lineHeight: 1.2 }}>
+      {/* Hero */}
+      <div style={{ marginBottom: 32, paddingTop: 8 }}>
+        <div style={{ fontWeight: 800, fontSize: 28, color: 'var(--fg)', marginBottom: 10, letterSpacing: '-.5px', lineHeight: 1.2 }}>
           {noData ? 'The court of champions' : 'The war rages on'}
         </div>
-        <div style={{ color: 'var(--fg-muted)', fontSize: 14, lineHeight: 1.6, fontStyle: noData ? 'italic' : 'normal' }}>
+        <div style={{ color: 'var(--fg-muted)', fontSize: 14, lineHeight: 1.7, fontStyle: noData ? 'italic' : 'normal' }}>
           {noData ? battleCry : tagline}
         </div>
       </div>
 
       {/* Stats row */}
       {!noData && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
           <StatChip icon={<CrossedAxesIcon size={20} color="var(--fg-muted)" />} label="Battles" value={totalSessions} />
           <StatChip icon={<FlameIcon size={20} color="var(--fg-muted)" />} label="Matches" value={totalMatches} />
           <StatChip icon={<ShieldIcon size={20} color="var(--fg-muted)" />} label="Warriors" value={lb.filter(p => p.games > 0).length || SQUAD.length} />
@@ -155,10 +155,10 @@ export default function Home({ history, loading, onNewSession, onCasual, onViewH
 
       {/* Champion + Pair */}
       {noData ? (
-        <div className="card" style={{ textAlign: 'center', padding: '44px 24px', marginBottom: 24, borderStyle: 'dashed' }}>
-          <ThroneIcon size={48} color="var(--fg-muted)" style={{ margin: '0 auto 18px', opacity: 0.2 }} />
-          <div style={{ fontWeight: 800, fontSize: 19, marginBottom: 10 }}>No champion yet</div>
-          <div style={{ color: 'var(--fg-muted)', fontSize: 14, lineHeight: 1.7, marginBottom: 28 }}>
+        <div className="card" style={{ textAlign: 'center', padding: '52px 28px', marginBottom: 28, borderStyle: 'dashed' }}>
+          <ThroneIcon size={48} color="var(--fg-muted)" style={{ margin: '0 auto 20px', opacity: 0.2 }} />
+          <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 12 }}>No champion yet</div>
+          <div style={{ color: 'var(--fg-muted)', fontSize: 14, lineHeight: 1.8, marginBottom: 32 }}>
             The throne is unclaimed. The deadliest pair unknown.<br />
             Glory awaits those who step onto the court.
           </div>
@@ -167,20 +167,20 @@ export default function Home({ history, loading, onNewSession, onCasual, onViewH
           </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+        <div style={{ display: 'flex', gap: 14, marginBottom: 28 }}>
           {topPlayer
             ? <div onClick={() => onPlayerClick?.(topPlayer.id)} style={{ flex: 1, cursor: 'pointer' }}>
                 <ChampionCard player={SQUAD.find(p => p.id === topPlayer.id)} wins={topPlayer.wins} games={topPlayer.games} />
               </div>
-            : <div className="card" style={{ flex: 1, textAlign: 'center', padding: '24px 12px' }}>
-                <ThroneIcon size={28} color="var(--fg-muted)" style={{ margin: '0 auto 10px', opacity: 0.2 }} />
+            : <div className="card" style={{ flex: 1, textAlign: 'center', padding: '28px 14px' }}>
+                <ThroneIcon size={28} color="var(--fg-muted)" style={{ margin: '0 auto 12px', opacity: 0.2 }} />
                 <div style={{ color: 'var(--fg-muted)', fontSize: 13 }}>Throne unclaimed</div>
               </div>
           }
           {topDuo
             ? <DeadliestPairCard duoKey={topDuo.key} wins={topDuo.wins} games={topDuo.games} />
-            : <div className="card" style={{ flex: 1, textAlign: 'center', padding: '24px 12px' }}>
-                <ShieldIcon size={28} color="var(--fg-muted)" style={{ margin: '0 auto 10px', opacity: 0.2 }} />
+            : <div className="card" style={{ flex: 1, textAlign: 'center', padding: '28px 14px' }}>
+                <ShieldIcon size={28} color="var(--fg-muted)" style={{ margin: '0 auto 12px', opacity: 0.2 }} />
                 <div style={{ color: 'var(--fg-muted)', fontSize: 13 }}>No alliance yet</div>
               </div>
           }
@@ -189,59 +189,57 @@ export default function Home({ history, loading, onNewSession, onCasual, onViewH
 
       {/* CTAs */}
       {!noData && (
-        <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
-          <button className="btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: 15, padding: '13px 0' }} onClick={onNewSession}>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
+          <button className="btn-primary" style={{ flex: 1, justifyContent: 'center', fontSize: 15, padding: '14px 0' }} onClick={onNewSession}>
             New Battle
           </button>
-          <button className="btn-secondary" style={{ flex: 1, fontSize: 15 }} onClick={onCasual}>
+          <button className="btn-secondary" style={{ flex: 1, fontSize: 15, justifyContent: 'center' }} onClick={onCasual}>
             Casual Play
           </button>
         </div>
       )}
 
-      {/* Squad — tap any player to see their stats */}
-      {!noData && (
-        <div className="card" style={{ marginBottom: 16, padding: '16px 20px' }}>
-          <div className="section-label" style={{ marginBottom: 14 }}>The Squad</div>
-          <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-            {SQUAD.map(p => {
-              const rec = (history.players || []).find(r => r.id === p.id);
-              const winRate = rec && rec.games > 0 ? Math.round((rec.wins / rec.games) * 100) : null;
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => onPlayerClick?.(p.id)}
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px' }}
-                >
-                  <Avatar player={p} size={52} border={false} />
-                  <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg)' }}>{p.name}</div>
-                  <div style={{ fontSize: 11, color: winRate !== null ? 'var(--green)' : 'var(--fg-muted)', fontWeight: 600 }}>
-                    {winRate !== null ? `${winRate}%` : '—'}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+      {/* Squad — always visible so anyone can tap their own profile */}
+      <div className="card" style={{ marginBottom: 20, padding: '20px 20px 16px' }}>
+        <div className="section-label" style={{ marginBottom: 18 }}>The Squad</div>
+        <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+          {SQUAD.map(p => {
+            const rec = (history.players || []).find(r => r.id === p.id);
+            const winRate = rec && rec.games > 0 ? Math.round((rec.wins / rec.games) * 100) : null;
+            return (
+              <button
+                key={p.id}
+                onClick={() => onPlayerClick?.(p.id)}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 10px', borderRadius: 12 }}
+              >
+                <Avatar player={p} size={56} border={false} />
+                <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg)' }}>{p.name}</div>
+                <div style={{ fontSize: 11, color: winRate !== null ? 'var(--green)' : 'var(--fg-muted)', fontWeight: 600 }}>
+                  {winRate !== null ? `${winRate}%` : '—'}
+                </div>
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
 
       {/* Recent sessions */}
       {sessions.length > 0 && (
-        <div className="card" style={{ marginBottom: 16, padding: '16px 20px' }}>
-          <div className="section-label" style={{ marginBottom: 4 }}>Recent Battles</div>
+        <div className="card" style={{ marginBottom: 20, padding: '20px 20px 8px' }}>
+          <div className="section-label" style={{ marginBottom: 6 }}>Recent Battles</div>
           {sessions.slice(0, 4).map((s, i) => (
             <SessionRow key={s.id} session={s} isLast={i === Math.min(sessions.length, 4) - 1} />
           ))}
           {sessions.length > 4 && (
-            <button className="btn-secondary" style={{ width: '100%', marginTop: 10, fontSize: 13 }} onClick={onViewHistory}>
+            <button className="btn-secondary" style={{ width: '100%', marginTop: 12, fontSize: 13, justifyContent: 'center' }} onClick={onViewHistory}>
               View all {sessions.length} battles
             </button>
           )}
         </div>
       )}
 
-      {/* Bottom nav — plain text, no SVG */}
-      <div style={{ display: 'flex', gap: 10 }}>
+      {/* Bottom nav */}
+      <div style={{ display: 'flex', gap: 12 }}>
         <button className="btn-secondary" style={{ flex: 1, fontSize: 13, justifyContent: 'center' }} onClick={onViewHistory}>
           War Records
         </button>

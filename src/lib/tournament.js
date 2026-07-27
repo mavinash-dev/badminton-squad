@@ -1,34 +1,42 @@
+// Three balanced cycles for 4-player doubles — each cycle is a permutation of the
+// 3 unique 2v2 pairings. Randomly picking a cycle makes the schedule feel varied
+// while guaranteeing every player partners with every other player exactly once
+// per 3 matches and faces every opponent exactly twice per 3 matches.
+const FOUR_PLAYER_CYCLES = [
+  [[[0,1],[2,3]], [[0,2],[1,3]], [[0,3],[1,2]]],
+  [[[0,2],[1,3]], [[0,3],[1,2]], [[0,1],[2,3]]],
+  [[[0,3],[1,2]], [[0,1],[2,3]], [[0,2],[1,3]]],
+];
+
 export function generateMatches(players, count) {
   const n = players.length;
   const matches = [];
 
   if (n === 4) {
-    const rotations = [
-      [[0, 1], [2, 3]],
-      [[0, 2], [1, 3]],
-      [[0, 3], [1, 2]],
-    ];
+    const cycle = FOUR_PLAYER_CYCLES[Math.floor(Math.random() * FOUR_PLAYER_CYCLES.length)];
     const total = count || 6;
     for (let i = 0; i < total; i++) {
-      const r = rotations[i % 3];
+      const [pairA, pairB] = cycle[i % 3];
       matches.push({
         matchId: i + 1,
-        teamA: [players[r[0][0]].id, players[r[0][1]].id],
-        teamB: [players[r[1][0]].id, players[r[1][1]].id],
+        teamA: [players[pairA[0]].id, players[pairA[1]].id],
+        teamB: [players[pairB[0]].id, players[pairB[1]].id],
         format: 'First to 21',
       });
     }
   } else {
-    // 3 players — 1v2 handicap rotation
+    // 3 players — round-robin singles rotation: A vs B, B vs C, C vs A
     const total = count || 6;
     for (let i = 0; i < total; i++) {
-      const solo = i % 3;
-      const others = players.filter((_, j) => j !== solo).map(p => p.id);
+      const a = i % 3;
+      const b = (i + 1) % 3;
+      const c = (i + 2) % 3;
       matches.push({
         matchId: i + 1,
-        teamA: [players[solo].id],
-        teamB: others,
-        format: 'First to 15',
+        teamA: [players[a].id],
+        teamB: [players[b].id],
+        // third player sits this one out — noted in format
+        format: `1v1 · ${players[c].name} rests`,
       });
     }
   }

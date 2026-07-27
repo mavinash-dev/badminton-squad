@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Icon } from '@iconify/react';
 import SessionHistory from './components/SessionHistory';
 import Home from './components/Home';
 import Setup from './components/Setup';
@@ -12,7 +11,6 @@ import CasualDatePicker from './components/CasualDatePicker';
 import PlayerProfile from './components/PlayerProfile';
 import { ShuttleTransition } from './components/Animations';
 import Background from './components/Background';
-import { generateSchedule } from './lib/grok';
 import { generateMatches } from './lib/tournament';
 import { readHistory, writeHistory } from './lib/github';
 
@@ -61,29 +59,14 @@ export default function App() {
   }
 
   // --- Structured session flow ---
-  async function handleGenerate({ players, matchCount, hours, date }) {
+  function handleGenerate({ players, matchCount, date }) {
     setShowSetup(false);
     setSessionPlayers(players);
     setSessionDate(date);
     setSessionType('structured');
 
-    let builtMatches;
-    try {
-      const grokResult = await generateSchedule({ players, matchCount, hours });
-      if (grokResult?.matches) {
-        builtMatches = grokResult.matches.map((m, i) => ({
-          matchId: m.id || i + 1,
-          teamA: m.teamA.map(name => players.find(p => p.name === name)?.id).filter(Boolean),
-          teamB: m.teamB.map(name => players.find(p => p.name === name)?.id).filter(Boolean),
-          format: m.format,
-          winner: null,
-        }));
-        if (builtMatches.some(m => !m.teamA.length || !m.teamB.length)) throw new Error('mapping');
-      } else throw new Error('no matches');
-    } catch {
-      const fallbackCount = matchCount || (hours === 2 ? (players.length === 4 ? 8 : 9) : (players.length === 4 ? 4 : 6));
-      builtMatches = generateMatches(players, fallbackCount).map(m => ({ ...m, winner: null }));
-    }
+    const count = matchCount || 6;
+    const builtMatches = generateMatches(players, count).map(m => ({ ...m, winner: null }));
 
     setMatches(builtMatches);
     shuttle();
@@ -136,41 +119,19 @@ export default function App() {
       <Background />
       {showShuttle && <ShuttleTransition id={shuttleKey} />}
 
-      <header style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '18px 20px 0', maxWidth: 640, margin: '0 auto',
-      }}>
-        <button
-          onClick={() => { shuttle(); setView('home'); }}
-          style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-        >
-          <Icon icon="game-icons:knight-banner" width={26} height={26} color="var(--green)" />
-          <span style={{ fontWeight: 800, fontSize: 17, color: 'var(--fg)', letterSpacing: '-.3px' }}>
-            Four Houses
-          </span>
-        </button>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {view !== 'home' && (
-            <button
-              className="btn-secondary"
-              style={{ fontSize: 13, padding: '7px 14px' }}
-              onClick={() => { shuttle(); setView('home'); }}
-            >
-              ← Home
-            </button>
-          )}
+      {view !== 'home' && (
+        <div style={{ maxWidth: 640, margin: '0 auto', padding: '18px 20px 0', display: 'flex', justifyContent: 'flex-start' }}>
           <button
-            className="btn-primary"
-            style={{ fontSize: 13, padding: '7px 16px', gap: 6 }}
-            onClick={() => setShowSetup(true)}
+            className="btn-secondary"
+            style={{ fontSize: 13, padding: '7px 14px' }}
+            onClick={() => { shuttle(); setView('home'); }}
           >
-            <Icon icon="game-icons:crossed-axes" width={15} height={15} color="#07070d" />
-            New Battle
+            ← Home
           </button>
         </div>
-      </header>
+      )}
 
-      <div className="app-wrap" style={{ paddingTop: 24 }}>
+      <div className="app-wrap" style={{ paddingTop: 20 }}>
 
         {view === 'home' && (
           <Home

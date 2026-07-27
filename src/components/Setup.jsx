@@ -27,8 +27,7 @@ export default function Setup({ onGenerate, onClose }) {
   const [selectedDate, setSelectedDate] = useState(todayIST());
   const [showCal, setShowCal] = useState(false);
   const [selectedIds, setSelectedIds] = useState(SQUAD.map(p => p.id));
-  const [hours, setHours] = useState(1);
-  const [matchCount, setMatchCount] = useState(null);
+  const [matchCount, setMatchCount] = useState(6);
   const [loading, setLoading] = useState(false);
   const [swing, setSwing] = useState(false);
 
@@ -45,9 +44,7 @@ export default function Setup({ onGenerate, onClose }) {
         if (prev.length >= 4) return prev;
         next = [...prev, id];
       }
-      if (prev.length !== next.length && (prev.length === 3 || prev.length === 4)) {
-        setMatchCount(null);
-      }
+      if (prev.length !== next.length) setMatchCount(6);
       return next;
     });
   }
@@ -56,15 +53,13 @@ export default function Setup({ onGenerate, onClose }) {
   const n = players.length;
   const canGenerate = n >= 3;
 
-  const matchOptions = n === 4
-    ? (hours === 2 ? [4, 5, 6, 7, 8] : [3, 4, 5, 6])
-    : (hours === 2 ? [6, 7, 8, 9] : [3, 4, 5, 6, 7]);
+  const matchOptions = [6, 9, 12, 15];
 
   async function handleGenerate() {
     setSwing(true);
     setTimeout(() => setSwing(false), 400);
     setLoading(true);
-    await onGenerate({ players, matchCount, hours, date: selectedDate });
+    await onGenerate({ players, matchCount, date: selectedDate });
     setLoading(false);
   }
 
@@ -152,47 +147,22 @@ export default function Setup({ onGenerate, onClose }) {
 
         {canGenerate && (
           <>
-            <div className="section-label">How long?</div>
-            <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-              {[1, 2].map(h => (
+            <div className="section-label" style={{ marginBottom: 8 }}>How many matches?</div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 26 }}>
+              {matchOptions.map(opt => (
                 <button
-                  key={h}
-                  onClick={() => { setHours(h); setMatchCount(null); }}
-                  style={{
-                    flex: 1, padding: '10px 0', borderRadius: 12, border: '1.5px solid',
-                    borderColor: hours === h ? 'var(--green)' : 'var(--border)',
-                    background: hours === h ? 'var(--green-bg)' : 'var(--elevated)',
-                    color: hours === h ? 'var(--green)' : 'var(--fg-muted)',
-                    fontWeight: 700, fontSize: 15, cursor: 'pointer',
-                    transition: 'all .15s', fontFamily: 'Inter, sans-serif',
-                  }}
-                >
-                  {h} hour{h > 1 ? 's' : ''}
-                </button>
-              ))}
-            </div>
-
-            <div className="section-label" style={{ marginBottom: 8 }}>
-              Matches{' '}
-              <span style={{ fontWeight: 400, color: 'var(--fg-muted)', textTransform: 'none', letterSpacing: 0, fontSize: 10 }}>
-                — Auto picks based on duration
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 26, flexWrap: 'wrap' }}>
-              {[null, ...matchOptions].map(opt => (
-                <button
-                  key={opt ?? 'auto'}
+                  key={opt}
                   onClick={() => setMatchCount(opt)}
                   style={{
-                    flex: 1, minWidth: 46, padding: '9px 0', borderRadius: 10, border: '1.5px solid',
+                    flex: 1, padding: '9px 0', borderRadius: 10, border: '1.5px solid',
                     borderColor: matchCount === opt ? 'var(--green)' : 'var(--border)',
                     background: matchCount === opt ? 'var(--green-bg)' : 'var(--elevated)',
                     color: matchCount === opt ? 'var(--green)' : 'var(--fg-muted)',
-                    fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                    fontWeight: 700, fontSize: 14, cursor: 'pointer',
                     transition: 'all .15s', fontFamily: 'Inter, sans-serif',
                   }}
                 >
-                  {opt ?? 'Auto'}
+                  {opt}
                 </button>
               ))}
             </div>
