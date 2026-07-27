@@ -20,11 +20,11 @@ async function call(system, user) {
   return resp.choices[0].message.content.trim();
 }
 
-export async function generateSchedule({ players, matchCount }) {
+export async function generateSchedule({ players, matchCount, hours = 1 }) {
   const n = players.length;
   const format = n === 4 ? '2v2 rotating partners' : '1v2 handicap rotation';
-  const defaultCount = n === 4 ? 6 : 6;
-  const total = matchCount || defaultCount;
+  const defaultCount = matchCount || (hours === 2 ? (n === 4 ? 6 : 9) : (n === 4 ? 4 : 6));
+  const total = defaultCount;
   const content = await call(
     'You are a badminton tournament scheduler. Return ONLY valid JSON, no markdown, no explanation.',
     `Schedule ${total} badminton matches for ${n} players: ${players.map(p => p.name).join(', ')}.

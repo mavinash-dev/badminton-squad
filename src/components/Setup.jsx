@@ -33,6 +33,7 @@ function PlayerToggle({ player, selected, onToggle }) {
 
 export default function Setup({ date, onGenerate, onClose }) {
   const [selectedIds, setSelectedIds] = useState(SQUAD.map(p => p.id));
+  const [hours, setHours] = useState(1);
   const [matchCount, setMatchCount] = useState(null); // null = auto (Grok decides)
   const [loading, setLoading] = useState(false);
   const [swing, setSwing] = useState(false);
@@ -55,7 +56,7 @@ export default function Setup({ date, onGenerate, onClose }) {
     setSwing(true);
     setTimeout(() => setSwing(false), 400);
     setLoading(true);
-    await onGenerate({ players, matchCount, date });
+    await onGenerate({ players, matchCount, hours, date });
     setLoading(false);
   }
 
@@ -70,7 +71,7 @@ export default function Setup({ date, onGenerate, onClose }) {
       zIndex: 50, padding: 16, backdropFilter: 'blur(6px)',
     }}>
       <div className="card" style={{ width: '100%', maxWidth: 440, padding: 28, animation: 'fadeUp .25s ease both' }}>
-        <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>🏸 Match Session</div>
+        <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>Match Session</div>
         <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginBottom: 24 }}>{displayDate}</div>
 
         {/* Player selection */}
@@ -84,8 +85,29 @@ export default function Setup({ date, onGenerate, onClose }) {
           {players.length} players — {players.length === 4 ? '2v2 rotating' : '1v2 handicap rotation'}
         </p>
 
+        {/* Duration */}
+        <div className="section-label">How long are you playing?</div>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+          {[1, 2].map(h => (
+            <button
+              key={h}
+              onClick={() => setHours(h)}
+              style={{
+                flex: 1, padding: '10px 0', borderRadius: 12, border: '1.5px solid',
+                borderColor: hours === h ? 'var(--green)' : 'var(--border)',
+                background: hours === h ? 'var(--green-bg)' : 'var(--elevated)',
+                color: hours === h ? 'var(--green)' : 'var(--fg-muted)',
+                fontWeight: 700, fontSize: 15, cursor: 'pointer',
+                transition: 'all .15s', fontFamily: 'Inter, sans-serif',
+              }}
+            >
+              {h}h
+            </button>
+          ))}
+        </div>
+
         {/* Match count */}
-        <div className="section-label">How many matches? <span style={{ fontWeight: 400, color: 'var(--fg-muted)' }}>(optional)</span></div>
+        <div className="section-label">Matches? <span style={{ fontWeight: 400, color: 'var(--fg-muted)' }}>(optional — Auto uses hours)</span></div>
         <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
           {[null, ...(players.length === 4 ? [3,4,5,6] : [3,4,5,6,7,8,9])].map(n => (
             <button

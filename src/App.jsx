@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import Calendar from './components/Calendar';
+import SessionHistory from './components/SessionHistory';
 import Home from './components/Home';
 import Setup from './components/Setup';
 import Schedule from './components/Schedule';
@@ -56,7 +56,7 @@ export default function App() {
   }
 
   // --- Structured session flow ---
-  async function handleGenerate({ players, matchCount, date }) {
+  async function handleGenerate({ players, matchCount, hours, date }) {
     setSetupDate(null);
     setSessionPlayers(players);
     setSessionDate(date);
@@ -64,7 +64,7 @@ export default function App() {
 
     let builtMatches;
     try {
-      const grokResult = await generateSchedule({ players, matchCount });
+      const grokResult = await generateSchedule({ players, matchCount, hours });
       if (grokResult?.matches) {
         builtMatches = grokResult.matches.map((m, i) => ({
           matchId: m.id || i + 1,
@@ -76,7 +76,8 @@ export default function App() {
         if (builtMatches.some(m => !m.teamA.length || !m.teamB.length)) throw new Error('mapping');
       } else throw new Error('no matches');
     } catch {
-      builtMatches = generateMatches(players, matchCount || 6).map(m => ({ ...m, winner: null }));
+      const fallbackCount = matchCount || (hours === 2 ? (players.length === 4 ? 6 : 9) : (players.length === 4 ? 4 : 6));
+      builtMatches = generateMatches(players, fallbackCount).map(m => ({ ...m, winner: null }));
     }
 
     setMatches(builtMatches);
@@ -175,22 +176,7 @@ export default function App() {
         )}
 
         {view === 'calendar' && (
-          <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
-              <button onClick={() => setView('home')} style={{ background: 'none', border: 'none', color: 'var(--fg-muted)', cursor: 'pointer', fontSize: 20, padding: '0 4px' }}>‹</button>
-              <div style={{ fontWeight: 800, fontSize: 20 }}>Session History</div>
-            </div>
-            <div className="card">
-              <Calendar
-                sessions={history.sessions || []}
-                onDayClick={(date, type) => {
-                  if (type === 'casual') setCasualDate(date);
-                  else setSetupDate(date);
-                }}
-                onDeleteSession={handleDeleteSession}
-              />
-            </div>
-          </div>
+          <SessionHistory sessions={history.sessions || []} onBack={() => setView('home')} />
         )}
 
         {view === 'schedule' && (
