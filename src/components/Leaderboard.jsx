@@ -56,8 +56,10 @@ export default function Leaderboard({ onBack }) {
       <div className="section-label" style={{ marginBottom: 12 }}>Best Player</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
         {players.length === 0 && (
-          <div className="card" style={{ textAlign: 'center', color: 'var(--fg-muted)', fontSize: 14 }}>
-            No sessions yet — play some matches first!
+          <div className="card" style={{ textAlign: 'center', padding: '24px', borderStyle: 'dashed' }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>⚔️</div>
+            <div style={{ fontWeight: 700, color: 'var(--fg)', marginBottom: 4 }}>The throne is unclaimed</div>
+            <div style={{ color: 'var(--fg-muted)', fontSize: 13 }}>No battles fought yet. Step onto the court.</div>
           </div>
         )}
         {players.map((p, i) => {
@@ -94,8 +96,9 @@ export default function Leaderboard({ onBack }) {
       <div className="section-label" style={{ marginBottom: 12 }}>Best Duo</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {duos.length === 0 && (
-          <div className="card" style={{ textAlign: 'center', color: 'var(--fg-muted)', fontSize: 14 }}>
-            No duo stats yet.
+          <div className="card" style={{ textAlign: 'center', padding: '20px', borderStyle: 'dashed' }}>
+            <div style={{ fontWeight: 700, color: 'var(--fg)', marginBottom: 4 }}>🛡️ No duo has risen yet</div>
+            <div style={{ color: 'var(--fg-muted)', fontSize: 13 }}>Alliances are forged in battle, not in waiting.</div>
           </div>
         )}
         {duos.slice(0, 6).map((d, i) => {

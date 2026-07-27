@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Calendar from './components/Calendar';
+import Home from './components/Home';
 import Setup from './components/Setup';
 import Schedule from './components/Schedule';
 import MatchLogger from './components/MatchLogger';
@@ -12,9 +13,11 @@ import { generateSchedule } from './lib/grok';
 import { generateMatches } from './lib/tournament';
 import { readHistory, writeHistory } from './lib/github';
 
+const EMPTY_HISTORY = { players: [], duos: {}, sessions: [] };
+
 export default function App() {
   const [view, setView] = useState('home');
-  const [sessions, setSessions] = useState([]);
+  const [history, setHistory] = useState(EMPTY_HISTORY);
   const [loading, setLoading] = useState(true);
 
   // Modal states
@@ -22,7 +25,7 @@ export default function App() {
   const [casualDate, setCasualDate] = useState(null);
   const [loggingMatchId, setLoggingMatchId] = useState(null);
 
-  // Shared session flow state (used by both structured + casual)
+  // Shared session flow state
   const [sessionPlayers, setSessionPlayers] = useState([]);
   const [sessionDate, setSessionDate] = useState(null);
   const [sessionType, setSessionType] = useState('structured');
@@ -40,15 +43,15 @@ export default function App() {
 
   useEffect(() => {
     readHistory()
-      .then(({ data }) => setSessions(data.sessions || []))
-      .catch(() => setSessions([]))
+      .then(({ data }) => setHistory(data))
+      .catch(() => setHistory(EMPTY_HISTORY))
       .finally(() => setLoading(false));
   }, []);
 
   async function refreshHistory() {
     try {
       const { data } = await readHistory();
-      setSessions(data.sessions || []);
+      setHistory(data);
     } catch {}
   }
 
@@ -73,7 +76,7 @@ export default function App() {
         if (builtMatches.some(m => !m.teamA.length || !m.teamB.length)) throw new Error('mapping');
       } else throw new Error('no matches');
     } catch {
-      builtMatches = generateMatches(players, matchCount || (players.length === 4 ? 6 : 6)).map(m => ({ ...m, winner: null }));
+      builtMatches = generateMatches(players, matchCount || 6).map(m => ({ ...m, winner: null }));
     }
 
     setMatches(builtMatches);
@@ -86,7 +89,7 @@ export default function App() {
     setLoggingMatchId(null);
   }
 
-  // --- Casual session: comes back with players + completed matches, goes to Results ---
+  // --- Casual session ---
   function handleCasualProceed({ players, matches: casualMatches }) {
     setCasualDate(null);
     setSessionPlayers(players);
@@ -106,9 +109,9 @@ export default function App() {
   // --- Delete session ---
   async function handleDeleteSession(id) {
     try {
-      const { data: history, sha } = await readHistory();
-      history.sessions = history.sessions.filter(s => s.id !== id);
-      await writeHistory(history, sha, 'delete-session');
+      const { data: hist, sha } = await readHistory();
+      hist.sessions = hist.sessions.filter(s => s.id !== id);
+      await writeHistory(hist, sha, 'delete-session');
       await refreshHistory();
     } catch (e) {
       console.error('Delete failed', e);
@@ -138,13 +141,15 @@ export default function App() {
           </span>
         </button>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button
-            className={view === 'leaderboard' ? 'btn-primary' : 'btn-secondary'}
-            style={{ fontSize: 13, padding: '7px 16px' }}
-            onClick={() => { shuttle(); setView('leaderboard'); }}
-          >
-            🏆 Leaderboard
-          </button>
+          {view !== 'home' && (
+            <button
+              className="btn-secondary"
+              style={{ fontSize: 13, padding: '7px 14px' }}
+              onClick={() => { shuttle(); setView('home'); }}
+            >
+              ← Home
+            </button>
+          )}
           <button
             className="btn-primary"
             style={{ fontSize: 13, padding: '7px 16px' }}
@@ -156,22 +161,28 @@ export default function App() {
       </header>
 
       <div className="app-wrap" style={{ paddingTop: 24 }}>
+
         {view === 'home' && (
-          <div>
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--green)', fontFamily: 'JetBrains Mono', marginBottom: 6 }}>
-                Badminton Squad
-              </div>
-              <div style={{ fontWeight: 800, fontSize: 26, color: 'var(--fg)', marginBottom: 4, letterSpacing: '-.4px' }}>
-                Hey squad 🏸
-              </div>
-              <div style={{ color: 'var(--fg-muted)', fontSize: 14 }}>
-                {loading ? 'Loading sessions…' : `${sessions.length} sessions logged`}
-              </div>
+          <Home
+            history={history}
+            loading={loading}
+            today={today}
+            onNewSession={date => setSetupDate(date)}
+            onCasual={date => setCasualDate(date)}
+            onViewHistory={() => { shuttle(); setView('calendar'); }}
+            onViewLeaderboard={() => { shuttle(); setView('leaderboard'); }}
+          />
+        )}
+
+        {view === 'calendar' && (
+          <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+              <button onClick={() => setView('home')} style={{ background: 'none', border: 'none', color: 'var(--fg-muted)', cursor: 'pointer', fontSize: 20, padding: '0 4px' }}>‹</button>
+              <div style={{ fontWeight: 800, fontSize: 20 }}>Session History</div>
             </div>
             <div className="card">
               <Calendar
-                sessions={sessions}
+                sessions={history.sessions || []}
                 onDayClick={(date, type) => {
                   if (type === 'casual') setCasualDate(date);
                   else setSetupDate(date);
@@ -203,7 +214,7 @@ export default function App() {
           />
         )}
 
-        {view === 'leaderboard' && <Leaderboard onBack={() => setView('home')} />}
+        {view === 'leaderboard' && <Leaderboard sessions={history.sessions} onBack={() => setView('home')} />}
       </div>
 
       {/* Modals */}
