@@ -52,22 +52,40 @@ function MatchBuilder({ squadIds, onAdd }) {
   const taken = [...teamA, ...teamB];
   const available = squad.filter(p => !taken.includes(p.id));
 
-  function addToA(id) { setTeamA(prev => [...prev, id]); }
+  // Auto-fill the other team when no choices remain
+  const teamAFull = teamA.length >= 2;
+  const teamBFull = teamB.length >= 2;
+
+  // If teamA has players and nothing is left for teamB to pick from, auto-assign remaining
+  const autoB = teamA.length >= 1 && teamB.length === 0 && available.length > 0 && available.length <= (squad.length - teamA.length);
+  const effectiveB = autoB ? available.map(p => p.id) : teamB;
+
+  function addToA(id) {
+    setTeamA(prev => {
+      const next = [...prev, id];
+      // After adding to A, if remaining players === squad.length - next.length and B is empty, auto-fill B
+      return next;
+    });
+  }
   function addToB(id) { setTeamB(prev => [...prev, id]); }
   function removeFromA(id) { setTeamA(prev => prev.filter(x => x !== id)); }
   function removeFromB(id) { setTeamB(prev => prev.filter(x => x !== id)); }
 
-  const canAdd = teamA.length >= 1 && teamB.length >= 1;
+  // Remaining after both teams are tentatively assigned
+  const takenWithAuto = [...teamA, ...effectiveB];
+  const stillAvailableForA = squad.filter(p => !takenWithAuto.includes(p.id));
+
+  const canAdd = teamA.length >= 1 && effectiveB.length >= 1;
 
   function handleAdd() {
     if (!canAdd) return;
-    onAdd({ teamA, teamB });
+    onAdd({ teamA, teamB: effectiveB });
     setTeamA([]);
     setTeamB([]);
   }
 
-  const teamAFull = teamA.length >= 2;
-  const teamBFull = teamB.length >= 2;
+  const displayB = effectiveB;
+  const bIsAuto = autoB && teamB.length === 0;
 
   return (
     <div style={{ background: 'var(--canvas)', borderRadius: 14, padding: 16, border: '1.5px dashed var(--border)' }}>
@@ -85,12 +103,9 @@ function MatchBuilder({ squadIds, onAdd }) {
             const p = SQUAD.find(q => q.id === id);
             return p ? <AssignedPlayer key={id} player={p} onRemove={() => removeFromA(id)} /> : null;
           })}
-          {!teamAFull && available.map(p => (
+          {!teamAFull && available.filter(p => !effectiveB.includes(p.id)).map(p => (
             <PlayerChip key={p.id} player={p} onSelect={addToA} />
           ))}
-          {teamA.length === 0 && available.length === 0 && (
-            <span style={{ fontSize: 12, color: 'var(--fg-muted)' }}>All players assigned</span>
-          )}
         </div>
       </div>
 
@@ -98,19 +113,34 @@ function MatchBuilder({ squadIds, onAdd }) {
 
       {/* Team B */}
       <div style={{ marginBottom: 14 }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-muted)', marginBottom: 8 }}>
-          Team B {teamB.length > 0 && <span style={{ color: 'var(--green)', marginLeft: 4 }}>({teamB.map(id => SQUAD.find(p=>p.id===id)?.name).join(' & ')})</span>}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--fg-muted)' }}>Team B</span>
+          {displayB.length > 0 && <span style={{ color: bIsAuto ? 'var(--fg-muted)' : 'var(--green)', fontSize: 12, fontWeight: 700 }}>({displayB.map(id => SQUAD.find(p=>p.id===id)?.name).join(' & ')})</span>}
+          {bIsAuto && <span style={{ fontSize: 10, color: 'var(--fg-muted)', fontStyle: 'italic' }}>auto</span>}
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', minHeight: 36, alignItems: 'center' }}>
-          {teamB.map(id => {
+          {!bIsAuto && displayB.map(id => {
             const p = SQUAD.find(q => q.id === id);
             return p ? <AssignedPlayer key={id} player={p} onRemove={() => removeFromB(id)} /> : null;
           })}
-          {!teamBFull && available.map(p => (
+          {bIsAuto && displayB.map(id => {
+            const p = SQUAD.find(q => q.id === id);
+            return p ? (
+              <div key={id} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                border: `1.5px dashed ${p.color}60`, background: `${p.color}08`,
+                borderRadius: 10, padding: '6px 10px 6px 6px',
+              }}>
+                <Avatar player={p} size={22} border={false} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: p.color, opacity: 0.8 }}>{p.name}</span>
+              </div>
+            ) : null;
+          })}
+          {!bIsAuto && !teamBFull && available.filter(p => !teamA.includes(p.id)).map(p => (
             <PlayerChip key={p.id} player={p} onSelect={addToB} />
           ))}
-          {teamB.length === 0 && available.length === 0 && teamA.length > 0 && (
-            <span style={{ fontSize: 12, color: 'var(--fg-muted)' }}>Remove a player from Team A first</span>
+          {teamA.length === 0 && (
+            <span style={{ fontSize: 12, color: 'var(--fg-muted)' }}>Pick Team A first</span>
           )}
         </div>
       </div>
