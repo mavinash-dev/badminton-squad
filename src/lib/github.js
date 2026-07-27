@@ -4,13 +4,16 @@ const OWNER = 'mavinash-dev';
 const REPO  = 'badminton-squad';
 const PATH  = 'history.json';
 
-const IS_LOCAL = !import.meta.env.VITE_GH_PAT;
+const PAT = import.meta.env.VITE_GH_PAT || '';
+// Treat as local if PAT is absent or still the placeholder
+const IS_LOCAL = !PAT || PAT.startsWith('your_');
 
-const octokit = IS_LOCAL ? null : new Octokit({ auth: import.meta.env.VITE_GH_PAT });
+const octokit = IS_LOCAL ? null : new Octokit({ auth: PAT });
 
 export async function readHistory() {
   if (IS_LOCAL) {
-    const res = await fetch('/history.local.json');
+    // BASE_URL includes the Vite base path (e.g. /badminton-squad/)
+    const res = await fetch(import.meta.env.BASE_URL + 'history.local.json');
     if (!res.ok) throw new Error('history.local.json not found in public/');
     const data = await res.json();
     return { data, sha: 'local' };
