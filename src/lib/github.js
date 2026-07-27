@@ -5,18 +5,17 @@ const REPO  = 'badminton-squad';
 const PATH  = 'history.json';
 
 const PAT = import.meta.env.VITE_GH_PAT || '';
-// Treat as local if PAT is absent or still the placeholder
 const IS_LOCAL = !PAT || PAT.startsWith('your_');
+const IS_DEMO = new URLSearchParams(window.location.search).has('demo');
 
-const octokit = IS_LOCAL ? null : new Octokit({ auth: PAT });
+const octokit = (IS_LOCAL || IS_DEMO) ? null : new Octokit({ auth: PAT });
 
 export async function readHistory() {
-  if (IS_LOCAL) {
-    // BASE_URL includes the Vite base path (e.g. /badminton-squad/)
+  if (IS_LOCAL || IS_DEMO) {
     const res = await fetch(import.meta.env.BASE_URL + 'history.local.json');
     if (!res.ok) throw new Error('history.local.json not found in public/');
     const data = await res.json();
-    return { data, sha: 'local' };
+    return { data, sha: 'demo' };
   }
   const { data } = await octokit.repos.getContent({ owner: OWNER, repo: REPO, path: PATH });
   return {
@@ -26,9 +25,8 @@ export async function readHistory() {
 }
 
 export async function writeHistory(newData, sha, sessionDate) {
-  if (IS_LOCAL) {
-    // In local dev, log the write but don't persist — restart resets to history.local.json
-    console.info('[local-dev] writeHistory (no-op):', sessionDate, newData);
+  if (IS_LOCAL || IS_DEMO) {
+    console.info('[demo] writeHistory (no-op):', sessionDate, newData);
     return;
   }
   await octokit.repos.createOrUpdateFileContents({
