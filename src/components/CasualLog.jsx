@@ -13,7 +13,7 @@ function PlayerChip({ player, onSelect }) {
         background: 'var(--elevated)',
         borderRadius: 10, padding: '6px 12px 6px 6px',
         cursor: 'pointer', transition: 'all .15s',
-        fontFamily: 'Nunito, sans-serif',
+        fontFamily: 'Inter, sans-serif',
       }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = player.color; e.currentTarget.style.background = `${player.color}12`; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.background = 'var(--elevated)'; }}
@@ -240,7 +240,7 @@ export default function CasualLog({ date, onProceed, onClose }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(245,240,232,.92)',
+      position: 'fixed', inset: 0, background: 'rgba(7,7,13,.92)',
       display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
       zIndex: 50, padding: '16px', overflowY: 'auto',
       backdropFilter: 'blur(6px)',

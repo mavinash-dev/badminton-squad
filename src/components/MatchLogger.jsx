@@ -53,7 +53,7 @@ export default function MatchLogger({ match, onLog, onClose }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(245,240,232,.90)',
+      position: 'fixed', inset: 0, background: 'rgba(7,7,13,.90)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 50, padding: 16, backdropFilter: 'blur(6px)',
     }}>

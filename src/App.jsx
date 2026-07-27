@@ -7,6 +7,7 @@ import Results from './components/Results';
 import Leaderboard from './components/Leaderboard';
 import CasualLog from './components/CasualLog';
 import { ShuttleTransition, ShuttlecockSVG } from './components/Animations';
+import Background from './components/Background';
 import { generateSchedule } from './lib/grok';
 import { generateMatches } from './lib/tournament';
 import { readHistory, writeHistory } from './lib/github';
@@ -118,7 +119,8 @@ export default function App() {
   const today = new Date().toISOString().slice(0, 10);
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div className="app-root">
+      <Background />
       {showShuttle && <ShuttleTransition id={shuttleKey} />}
 
       <header style={{
@@ -157,9 +159,14 @@ export default function App() {
         {view === 'home' && (
           <div>
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontWeight: 800, fontSize: 24, marginBottom: 4 }}>Hey squad 🏸</div>
-              <div style={{ color: 'var(--fg-muted)', fontSize: 15 }}>
-                {loading ? 'Loading…' : `${sessions.length} sessions played`}
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--green)', fontFamily: 'JetBrains Mono', marginBottom: 6 }}>
+                Badminton Squad
+              </div>
+              <div style={{ fontWeight: 800, fontSize: 26, color: 'var(--fg)', marginBottom: 4, letterSpacing: '-.4px' }}>
+                Hey squad 🏸
+              </div>
+              <div style={{ color: 'var(--fg-muted)', fontSize: 14 }}>
+                {loading ? 'Loading sessions…' : `${sessions.length} sessions logged`}
               </div>
             </div>
             <div className="card">

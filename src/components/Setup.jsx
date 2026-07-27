@@ -65,7 +65,7 @@ export default function Setup({ date, onGenerate, onClose }) {
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(245,240,232,.88)',
+      position: 'fixed', inset: 0, background: 'rgba(7,7,13,.88)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 50, padding: 16, backdropFilter: 'blur(6px)',
     }}>
@@ -98,7 +98,7 @@ export default function Setup({ date, onGenerate, onClose }) {
                 color: hours === h ? 'var(--green)' : 'var(--fg-muted)',
                 fontWeight: 700, fontSize: 15, cursor: 'pointer',
                 transition: 'all .15s',
-                fontFamily: 'Nunito, sans-serif',
+                fontFamily: 'Inter, sans-serif',
               }}
             >
               {h} hour{h > 1 ? 's' : ''}
