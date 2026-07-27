@@ -53,7 +53,7 @@ export default function App() {
   }
 
   // --- Structured session flow ---
-  async function handleGenerate({ players, hours, date }) {
+  async function handleGenerate({ players, matchCount, date }) {
     setSetupDate(null);
     setSessionPlayers(players);
     setSessionDate(date);
@@ -61,7 +61,7 @@ export default function App() {
 
     let builtMatches;
     try {
-      const grokResult = await generateSchedule({ players, hours });
+      const grokResult = await generateSchedule({ players, matchCount });
       if (grokResult?.matches) {
         builtMatches = grokResult.matches.map((m, i) => ({
           matchId: m.id || i + 1,
@@ -73,7 +73,7 @@ export default function App() {
         if (builtMatches.some(m => !m.teamA.length || !m.teamB.length)) throw new Error('mapping');
       } else throw new Error('no matches');
     } catch {
-      builtMatches = generateMatches(players, hours).map(m => ({ ...m, winner: null }));
+      builtMatches = generateMatches(players, matchCount || (players.length === 4 ? 6 : 6)).map(m => ({ ...m, winner: null }));
     }
 
     setMatches(builtMatches);

@@ -1,4 +1,4 @@
-export function generateMatches(players, hours) {
+export function generateMatches(players, count) {
   const n = players.length;
   const matches = [];
 
@@ -8,32 +8,28 @@ export function generateMatches(players, hours) {
       [[0, 2], [1, 3]],
       [[0, 3], [1, 2]],
     ];
-    const format = hours === 1 ? 'First to 21' : 'Best of 3 sets (first to 21)';
-    rotations.forEach(([a, b], i) => {
+    const total = count || 6;
+    for (let i = 0; i < total; i++) {
+      const r = rotations[i % 3];
       matches.push({
         matchId: i + 1,
-        teamA: [players[a].id, players[a + (a === 0 ? 1 : 0)].id].filter((_, j) => j === 0 ? true : true),
-        teamB: [],
-        format,
+        teamA: [players[r[0][0]].id, players[r[0][1]].id],
+        teamB: [players[r[1][0]].id, players[r[1][1]].id],
+        format: 'First to 21',
       });
-      // rebuild properly
-      matches[i].teamA = [players[rotations[i][0][0]].id, players[rotations[i][0][1]].id];
-      matches[i].teamB = [players[rotations[i][1][0]].id, players[rotations[i][1][1]].id];
-    });
+    }
   } else {
-    // 3 players — 1v2 handicap
-    const format = hours === 1 ? 'First to 15 (2 rotations)' : 'First to 21 (4 rotations)';
-    const reps = hours === 1 ? 2 : 4;
-    for (let r = 0; r < reps; r++) {
-      for (let solo = 0; solo < 3; solo++) {
-        const others = players.filter((_, i) => i !== solo).map(p => p.id);
-        matches.push({
-          matchId: matches.length + 1,
-          teamA: [players[solo].id],
-          teamB: others,
-          format,
-        });
-      }
+    // 3 players — 1v2 handicap rotation
+    const total = count || 6;
+    for (let i = 0; i < total; i++) {
+      const solo = i % 3;
+      const others = players.filter((_, j) => j !== solo).map(p => p.id);
+      matches.push({
+        matchId: i + 1,
+        teamA: [players[solo].id],
+        teamB: others,
+        format: 'First to 15',
+      });
     }
   }
   return matches;
@@ -53,11 +49,12 @@ export function calcSessionLeaderboard(players, matches) {
     winners.forEach(id => { wins[id] = (wins[id] || 0) + 1; });
   });
 
-  const mvp = players.reduce((best, p) =>
-    (wins[p.id] || 0) > (wins[best.id] || 0) ? p : best
-  ).id;
+  // MVP — null if tied
+  const maxWins = Math.max(...players.map(p => wins[p.id] || 0));
+  const mvpCandidates = players.filter(p => (wins[p.id] || 0) === maxWins);
+  const mvp = maxWins > 0 && mvpCandidates.length === 1 ? mvpCandidates[0].id : null;
 
-  // best duo from matches
+  // Best duo — null if tied or no duo matches
   const duoWins = {};
   matches.forEach(m => {
     if (!m.winner) return;
@@ -68,9 +65,12 @@ export function calcSessionLeaderboard(players, matches) {
     }
   });
 
-  const bestDuo = Object.entries(duoWins).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+  const duoEntries = Object.entries(duoWins).sort((a, b) => b[1] - a[1]);
+  const topDuoWins = duoEntries[0]?.[1] || 0;
+  const topDuos = duoEntries.filter(([, v]) => v === topDuoWins);
+  const bestDuo = topDuoWins > 0 && topDuos.length === 1 ? topDuos[0][0] : null;
 
-  return { mvp, bestDuo, wins };
+  return { mvp, bestDuo, wins, mvpTied: maxWins > 0 && mvpCandidates.length > 1, duoTied: topDuoWins > 0 && topDuos.length > 1 };
 }
 
 export function mergeSessionIntoHistory(history, session, players, matches) {

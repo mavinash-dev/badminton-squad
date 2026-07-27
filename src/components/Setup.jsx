@@ -33,7 +33,7 @@ function PlayerToggle({ player, selected, onToggle }) {
 
 export default function Setup({ date, onGenerate, onClose }) {
   const [selectedIds, setSelectedIds] = useState(SQUAD.map(p => p.id));
-  const [hours, setHours] = useState(1);
+  const [matchCount, setMatchCount] = useState(null); // null = auto (Grok decides)
   const [loading, setLoading] = useState(false);
   const [swing, setSwing] = useState(false);
 
@@ -55,7 +55,7 @@ export default function Setup({ date, onGenerate, onClose }) {
     setSwing(true);
     setTimeout(() => setSwing(false), 400);
     setLoading(true);
-    await onGenerate({ players, hours, date });
+    await onGenerate({ players, matchCount, date });
     setLoading(false);
   }
 
@@ -84,24 +84,24 @@ export default function Setup({ date, onGenerate, onClose }) {
           {players.length} players — {players.length === 4 ? '2v2 rotating' : '1v2 handicap rotation'}
         </p>
 
-        {/* Duration */}
-        <div className="section-label">Duration</div>
-        <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
-          {[1, 2].map(h => (
+        {/* Match count */}
+        <div className="section-label">How many matches? <span style={{ fontWeight: 400, color: 'var(--fg-muted)' }}>(optional)</span></div>
+        <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+          {[null, ...(players.length === 4 ? [3,4,5,6] : [3,4,5,6,7,8,9])].map(n => (
             <button
-              key={h}
-              onClick={() => setHours(h)}
+              key={n ?? 'auto'}
+              onClick={() => setMatchCount(n)}
               style={{
-                flex: 1, padding: '11px 0', borderRadius: 12, border: '1.5px solid',
-                borderColor: hours === h ? 'var(--green)' : 'var(--border)',
-                background: hours === h ? 'var(--green-bg)' : 'var(--elevated)',
-                color: hours === h ? 'var(--green)' : 'var(--fg-muted)',
-                fontWeight: 700, fontSize: 15, cursor: 'pointer',
+                flex: 1, minWidth: 52, padding: '10px 0', borderRadius: 12, border: '1.5px solid',
+                borderColor: matchCount === n ? 'var(--green)' : 'var(--border)',
+                background: matchCount === n ? 'var(--green-bg)' : 'var(--elevated)',
+                color: matchCount === n ? 'var(--green)' : 'var(--fg-muted)',
+                fontWeight: 700, fontSize: 14, cursor: 'pointer',
                 transition: 'all .15s',
                 fontFamily: 'Inter, sans-serif',
               }}
             >
-              {h} hour{h > 1 ? 's' : ''}
+              {n ?? 'Auto'}
             </button>
           ))}
         </div>

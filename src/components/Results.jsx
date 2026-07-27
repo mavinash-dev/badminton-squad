@@ -21,11 +21,11 @@ export default function Results({ players, matches, date, sessionType = 'structu
     return () => clearTimeout(t);
   }, []);
 
-  const { wins, mvp, bestDuo } = calcSessionLeaderboard(players, matches);
+  const { wins, mvp, bestDuo, mvpTied, duoTied } = calcSessionLeaderboard(players, matches);
   const sorted = [...players].sort((a, b) => (wins[b.id] || 0) - (wins[a.id] || 0));
 
   const medals = ['🥇', '🥈', '🥉'];
-  const mvpPlayer = SQUAD.find(p => p.id === mvp);
+  const mvpPlayer = mvp ? SQUAD.find(p => p.id === mvp) : null;
 
   function duoNames(key) {
     if (!key) return '—';
@@ -82,7 +82,7 @@ export default function Results({ players, matches, date, sessionType = 'structu
       </div>
 
       {/* MVP hero */}
-      {mvpPlayer && (
+      {mvpPlayer ? (
         <div className="card" style={{
           marginBottom: 14, textAlign: 'center',
           background: 'linear-gradient(135deg, rgba(45,106,79,.07), rgba(233,196,106,.07))',
@@ -97,6 +97,12 @@ export default function Results({ players, matches, date, sessionType = 'structu
           <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginTop: 2 }}>
             {wins[mvp] || 0} wins this session
           </div>
+        </div>
+      ) : mvpTied && (
+        <div className="card" style={{ marginBottom: 14, textAlign: 'center', borderColor: 'var(--border-hi)' }}>
+          <div style={{ fontSize: 22, marginBottom: 6 }}>🤝</div>
+          <div style={{ fontWeight: 800, fontSize: 16 }}>It's a tie!</div>
+          <div style={{ fontSize: 13, color: 'var(--fg-muted)', marginTop: 4 }}>No MVP this session — everyone's equal</div>
         </div>
       )}
 
@@ -127,13 +133,18 @@ export default function Results({ players, matches, date, sessionType = 'structu
       </div>
 
       {/* Best duo */}
-      {bestDuo && (
+      {bestDuo ? (
         <div className="card" style={{ marginBottom: 14 }}>
           <div className="section-label" style={{ marginBottom: 10 }}>Best Duo</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <TeamAvatars ids={bestDuo.split('_')} size={34} />
             <span style={{ fontWeight: 700, fontSize: 15 }}>{duoNames(bestDuo)}</span>
           </div>
+        </div>
+      ) : duoTied && (
+        <div className="card" style={{ marginBottom: 14 }}>
+          <div className="section-label" style={{ marginBottom: 6 }}>Best Duo</div>
+          <div style={{ fontSize: 13, color: 'var(--fg-muted)' }}>Tied — no clear winners today</div>
         </div>
       )}
 

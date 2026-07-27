@@ -20,14 +20,17 @@ async function call(system, user) {
   return resp.choices[0].message.content.trim();
 }
 
-export async function generateSchedule({ players, hours }) {
+export async function generateSchedule({ players, matchCount }) {
   const n = players.length;
   const format = n === 4 ? '2v2 rotating partners' : '1v2 handicap rotation';
+  const defaultCount = n === 4 ? 6 : 6;
+  const total = matchCount || defaultCount;
   const content = await call(
     'You are a badminton tournament scheduler. Return ONLY valid JSON, no markdown, no explanation.',
-    `Schedule a ${hours}-hour badminton session for ${n} players: ${players.map(p => p.name).join(', ')}.
-Format: ${format}. Include match number, teamA (array of player names), teamB, and game format (e.g. "First to 21").
-Return exactly: { "matches": [ { "id": 1, "teamA": [...], "teamB": [...], "format": "..." } ] }`
+    `Schedule ${total} badminton matches for ${n} players: ${players.map(p => p.name).join(', ')}.
+Format: ${format}. Rotate pairings fairly so every player gets even court time. Game format: "First to 21".
+Return exactly: { "matches": [ { "id": 1, "teamA": [...], "teamB": [...], "format": "First to 21" } ] }
+Return exactly ${total} matches.`
   );
   try {
     const parsed = JSON.parse(content);
@@ -38,8 +41,8 @@ Return exactly: { "matches": [ { "id": 1, "teamA": [...], "teamB": [...], "forma
 }
 
 export async function generateSummary({ players, matches, sessionLeaderboard }) {
-  const mvpPlayer = players.find(p => p.id === sessionLeaderboard.mvp);
-  const mvpName = mvpPlayer?.name || sessionLeaderboard.mvp;
+  const mvpPlayer = sessionLeaderboard.mvp ? players.find(p => p.id === sessionLeaderboard.mvp) : null;
+  const mvpName = mvpPlayer?.name || null;
   const duoNames = sessionLeaderboard.bestDuo
     ? sessionLeaderboard.bestDuo.split('_').map(id => players.find(p => p.id === id)?.name || id).join(' & ')
     : null;
@@ -47,7 +50,8 @@ export async function generateSummary({ players, matches, sessionLeaderboard }) 
   return call(
     'You are an energetic sports commentator for a friends badminton group. Be hype, casual, funny, and a little savage. 3 sentences max. No markdown.',
     `Match results: ${JSON.stringify(matches.map(m => ({ teamA: m.teamA.map(id => players.find(p=>p.id===id)?.name||id), teamB: m.teamB.map(id => players.find(p=>p.id===id)?.name||id), winner: m.winner })))}.
-MVP: ${mvpName}. ${duoNames ? `Best duo: ${duoNames}.` : ''}
-Write a short hype wrap-up declaring the day's champion and gently roasting the losers. Keep it fun and friendly.`
+${mvpName ? `MVP: ${mvpName}.` : 'It was a tie — no clear MVP today.'}
+${duoNames ? `Best duo: ${duoNames}.` : ''}
+Write a short hype wrap-up${mvpName ? ` declaring ${mvpName} the champion` : ' acknowledging the tie'}. Gently roast the losers. Keep it fun and friendly.`
   );
 }
