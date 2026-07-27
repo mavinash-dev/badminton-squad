@@ -1,38 +1,41 @@
-# Badminton Squad Tracker
+# Four Houses — Badminton Squad Tracker
 
-> Zero-setup badminton session tracker for a friend group — AI schedules, match logging, all-time leaderboard.
+> Track wins, rivalries, and glory — for a group of friends who take their badminton seriously.
+
+---
+
+## Access
+
+| Link | What it does |
+|---|---|
+| **[mavinash-dev.github.io/badminton-squad](https://mavinash-dev.github.io/badminton-squad/)** | Live app — real data, saves to GitHub |
+| **[mavinash-dev.github.io/badminton-squad/?demo](https://mavinash-dev.github.io/badminton-squad/?demo)** | Demo mode — dummy data, no writes, safe to share |
 
 ---
 
 ## What It Is
 
-A phone-friendly web app for a group of 3–4 friends who play badminton weekly. Open one shared URL, pick who's playing and for how long, get an AI-generated fair match schedule, log winners during play, and see a fun AI post-match summary. All history is saved to the GitHub repo — the leaderboard updates automatically.
+A phone-friendly web app for Avinash, Bhavya, Malay, and Rajeev. Open the URL, pick who's playing, choose match count (6 / 9 / 12 / 15), and get a mathematically balanced rotation. Log winners during play, see an AI post-match roast, and track all-time standings.
 
-No accounts. No app install. No configuration. Just open the URL and play.
-
----
-
-## Why It Exists
-
-Weekly badminton sessions with friends meant manually figuring out fair rotations, forgetting who won last week, and having no shared record of the all-time champion. This solves all three.
+No accounts. No app install. No configuration.
 
 ---
 
 ## Features
 
-- **AI Schedule** — Grok generates fair rotated matches (2v2 or 1v2 handicap) for your session length
-- **Match Logging** — Tap to log winners; confetti celebrates each result
-- **AI Post-Match Summary** — Grok writes a fun 3-sentence recap roasting the losers
+- **Balanced Schedule** — Deterministic 3-cycle rotation for 4p (every pairing fair); round-robin for 3p
+- **Match Logging** — Tap to log winners as you play
+- **AI Post-Match Summary** — Groq writes a fun 3-sentence recap roasting the losers by name
+- **Player Profiles** — Per-player win rate, duo records, MVP history, and an AI-generated roast
 - **All-Time Leaderboard** — Win rates for players and duo pairs across all sessions
-- **Shared History** — `history.json` committed to this repo; everyone sees the same data
+- **Casual Play** — Log ad-hoc matches with any combo; counts toward all-time stats
+- **War Records** — Full session history with match-by-match breakdown and delete
 
 ---
 
 ## Status
 
-**Phase:** Phase 1 — Full Implementation
-**Stage:** In Development
-**Live at:** `https://mavinash-dev.github.io/badminton-squad/` (after deploy)
+**Live at:** `https://mavinash-dev.github.io/badminton-squad/`
 
 ---
 
