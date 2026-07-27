@@ -80,7 +80,7 @@ function DeadliestPairCard({ duoKey, wins, games }) {
 
 function SessionRow({ session, isLast }) {
   const date = new Date(session.date + 'T12:00:00').toLocaleDateString('en-IN', {
-    weekday: 'short', day: 'numeric', month: 'short',
+    timeZone: 'Asia/Kolkata', weekday: 'short', day: 'numeric', month: 'short',
   });
   const players = (session.playerIds || []).map(id => SQUAD.find(p => p.id === id)).filter(Boolean);
   const total = session.matches?.length || 0;

@@ -235,7 +235,7 @@ export default function CasualLog({ date, onProceed, onClose }) {
   const canFinish = matches.length > 0 && loggedCount === matches.length;
 
   const displayDate = new Date(date + 'T12:00:00').toLocaleDateString('en-IN', {
-    weekday: 'long', day: 'numeric', month: 'long',
+    timeZone: 'Asia/Kolkata', weekday: 'long', day: 'numeric', month: 'long',
   });
 
   return (

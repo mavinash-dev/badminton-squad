@@ -110,7 +110,7 @@ export default function PlayerProfile({ playerId, history, onBack }) {
             <div className="section-label" style={{ margin: 0 }}>Session History</div>
           </div>
           {sessions.map((s, i) => {
-            const date = new Date(s.date + 'T12:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+            const date = new Date(s.date + 'T12:00:00').toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', weekday: 'short', day: 'numeric', month: 'short' });
             const w = sessionWins(s);
             const total = (s.matches || []).filter(m => m.winner && (m.teamA.includes(playerId) || m.teamB.includes(playerId))).length;
             const isLast = i === sessions.length - 1;

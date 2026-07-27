@@ -20,7 +20,7 @@ function MatchLine({ match }) {
 function SessionCard({ session }) {
   const [expanded, setExpanded] = useState(false);
   const date = new Date(session.date + 'T12:00:00').toLocaleDateString('en-IN', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    timeZone: 'Asia/Kolkata', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
   const players = (session.playerIds || []).map(id => SQUAD.find(p => p.id === id)).filter(Boolean);
   const total = session.matches?.length || 0;

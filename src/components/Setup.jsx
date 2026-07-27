@@ -3,72 +3,37 @@ import { SQUAD } from '../lib/players';
 import { RacketSVG } from './Animations';
 import { Avatar } from './Avatar';
 import { CrossedAxesIcon } from './Icons';
-
-const today = new Date().toISOString().slice(0, 10);
-const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-
-function DateChip({ label, value, selected, onSelect }) {
-  return (
-    <button
-      onClick={() => onSelect(value)}
-      style={{
-        padding: '9px 16px', borderRadius: 10, border: '1.5px solid',
-        borderColor: selected ? 'var(--green)' : 'var(--border)',
-        background: selected ? 'var(--green-bg)' : 'var(--elevated)',
-        color: selected ? 'var(--green)' : 'var(--fg-muted)',
-        fontWeight: 700, fontSize: 13, cursor: 'pointer',
-        transition: 'all .15s', fontFamily: 'Inter, sans-serif',
-      }}
-    >
-      {label}
-    </button>
-  );
-}
+import DatePicker from './DatePicker';
+import { todayIST, offsetIST, formatDisplayIST } from '../lib/date';
 
 function PlayerToggle({ player, selected, onToggle }) {
   return (
     <button
       onClick={() => onToggle(player.id)}
       style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-        background: 'none', border: 'none', cursor: 'pointer', padding: '10px 12px',
-        borderRadius: 14,
-        outline: selected ? `2px solid ${player.color}` : '2px solid transparent',
-        backgroundColor: selected ? `${player.color}15` : 'transparent',
-        transition: 'all .15s',
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        background: 'none', border: 'none', cursor: 'pointer',
+        padding: '8px 10px', borderRadius: 12,
+        opacity: selected ? 1 : 0.22,
+        transition: 'opacity .15s',
       }}
     >
-      <div style={{
-        opacity: selected ? 1 : 0.25,
-        transition: 'opacity .15s',
-        boxShadow: selected ? `0 0 0 2.5px ${player.color}, 0 4px 16px ${player.color}50` : 'none',
-        borderRadius: '50%',
-      }}>
-        <Avatar player={player} size={54} border={false} />
-      </div>
+      <Avatar player={player} size={56} border={false} />
     </button>
   );
 }
 
 export default function Setup({ onGenerate, onClose }) {
-  const [selectedDate, setSelectedDate] = useState(today);
-  const [customDate, setCustomDate] = useState('');
+  const [selectedDate, setSelectedDate] = useState(todayIST());
+  const [showCal, setShowCal] = useState(false);
   const [selectedIds, setSelectedIds] = useState(SQUAD.map(p => p.id));
   const [hours, setHours] = useState(1);
   const [matchCount, setMatchCount] = useState(null);
   const [loading, setLoading] = useState(false);
   const [swing, setSwing] = useState(false);
 
-  function selectDate(d) {
-    setSelectedDate(d);
-    setCustomDate('');
-  }
-
-  function handleCustomDate(e) {
-    const v = e.target.value;
-    setCustomDate(v);
-    if (v) setSelectedDate(v);
-  }
+  const today = todayIST();
+  const tomorrow = offsetIST(1);
 
   function toggle(id) {
     setSelectedIds(prev => {
@@ -80,10 +45,7 @@ export default function Setup({ onGenerate, onClose }) {
         if (prev.length >= 4) return prev;
         next = [...prev, id];
       }
-      // reset matchCount if crossing the 3↔4 boundary
-      const prevCount = prev.length;
-      const nextCount = next.length;
-      if ((prevCount === 4 && nextCount === 3) || (prevCount === 3 && nextCount === 4)) {
+      if (prev.length !== next.length && (prev.length === 3 || prev.length === 4)) {
         setMatchCount(null);
       }
       return next;
@@ -93,7 +55,10 @@ export default function Setup({ onGenerate, onClose }) {
   const players = SQUAD.filter(p => selectedIds.includes(p.id));
   const n = players.length;
   const canGenerate = n >= 3;
-  const dateLabel = selectedDate === today ? 'Today' : selectedDate === tomorrow ? 'Tomorrow' : selectedDate;
+
+  const matchOptions = n === 4
+    ? (hours === 2 ? [4, 5, 6, 7, 8] : [3, 4, 5, 6])
+    : (hours === 2 ? [6, 7, 8, 9] : [3, 4, 5, 6, 7]);
 
   async function handleGenerate() {
     setSwing(true);
@@ -103,19 +68,17 @@ export default function Setup({ onGenerate, onClose }) {
     setLoading(false);
   }
 
-  // 4p: 1h→3-6, 2h→4-8 | 3p: 1h→4-7, 2h→6-9
-  const matchOptions = n === 4
-    ? (hours === 2 ? [4, 5, 6, 7, 8] : [3, 4, 5, 6])
-    : (hours === 2 ? [6, 7, 8, 9] : [3, 4, 5, 6, 7]);
+  const dateLabel = selectedDate === today ? 'Today'
+    : selectedDate === tomorrow ? 'Tomorrow'
+    : formatDisplayIST(selectedDate);
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(7,7,13,.9)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 50, padding: 16, backdropFilter: 'blur(8px)',
-      overflowY: 'auto',
+      position: 'fixed', inset: 0, background: 'rgba(7,7,13,.92)',
+      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+      zIndex: 50, padding: '16px', backdropFilter: 'blur(8px)', overflowY: 'auto',
     }}>
-      <div className="card" style={{ width: '100%', maxWidth: 440, padding: '28px 26px', animation: 'fadeUp .25s ease both', margin: 'auto' }}>
+      <div className="card" style={{ width: '100%', maxWidth: 420, padding: '26px 22px', animation: 'fadeUp .25s ease both', marginTop: 20 }}>
 
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
@@ -128,48 +91,67 @@ export default function Setup({ onGenerate, onClose }) {
 
         {/* Date */}
         <div className="section-label">When are you playing?</div>
-        <div style={{ display: 'flex', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
-          <DateChip label="Today" value={today} selected={selectedDate === today && !customDate} onSelect={selectDate} />
-          <DateChip label="Tomorrow" value={tomorrow} selected={selectedDate === tomorrow && !customDate} onSelect={selectDate} />
-          <div style={{ flex: 1, minWidth: 130 }}>
-            <input
-              type="date"
-              value={customDate}
-              onChange={handleCustomDate}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+          {[{ label: 'Today', v: today }, { label: 'Tomorrow', v: tomorrow }].map(({ label, v }) => (
+            <button
+              key={v}
+              onClick={() => { setSelectedDate(v); setShowCal(false); }}
               style={{
-                width: '100%', padding: '8px 10px', borderRadius: 10, border: '1.5px solid',
-                borderColor: customDate ? 'var(--green)' : 'var(--border)',
-                background: customDate ? 'var(--green-bg)' : 'var(--elevated)',
-                color: customDate ? 'var(--green)' : 'var(--fg-muted)',
-                fontSize: 13, fontWeight: 600, fontFamily: 'Inter, sans-serif',
-                outline: 'none', boxSizing: 'border-box',
-                colorScheme: 'dark',
+                padding: '8px 18px', borderRadius: 10, border: '1.5px solid',
+                borderColor: selectedDate === v && !showCal ? 'var(--green)' : 'var(--border)',
+                background: selectedDate === v && !showCal ? 'var(--green-bg)' : 'var(--elevated)',
+                color: selectedDate === v && !showCal ? 'var(--green)' : 'var(--fg-muted)',
+                fontWeight: 700, fontSize: 13, cursor: 'pointer',
+                transition: 'all .15s', fontFamily: 'Inter, sans-serif',
               }}
+            >
+              {label}
+            </button>
+          ))}
+          <button
+            onClick={() => setShowCal(c => !c)}
+            style={{
+              flex: 1, padding: '8px 12px', borderRadius: 10, border: '1.5px solid',
+              borderColor: showCal || (selectedDate !== today && selectedDate !== tomorrow) ? 'var(--green)' : 'var(--border)',
+              background: showCal || (selectedDate !== today && selectedDate !== tomorrow) ? 'var(--green-bg)' : 'var(--elevated)',
+              color: showCal || (selectedDate !== today && selectedDate !== tomorrow) ? 'var(--green)' : 'var(--fg-muted)',
+              fontWeight: 700, fontSize: 13, cursor: 'pointer',
+              transition: 'all .15s', fontFamily: 'Inter, sans-serif',
+            }}
+          >
+            {selectedDate !== today && selectedDate !== tomorrow ? dateLabel : 'Pick date'}
+          </button>
+        </div>
+
+        {showCal && (
+          <div style={{ background: 'var(--canvas)', borderRadius: 12, padding: '14px 12px', marginBottom: 14 }}>
+            <DatePicker
+              value={selectedDate}
+              onChange={d => { setSelectedDate(d); setShowCal(false); }}
             />
           </div>
-        </div>
+        )}
+
         <div style={{ fontSize: 12, color: 'var(--fg-muted)', marginBottom: 22 }}>
-          {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' })}
+          {formatDisplayIST(selectedDate)}
         </div>
 
         {/* Players */}
         <div className="section-label">Who's playing? (3 or 4)</div>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginBottom: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
           {SQUAD.map(p => (
             <PlayerToggle key={p.id} player={p} selected={selectedIds.includes(p.id)} onToggle={toggle} />
           ))}
         </div>
         <p style={{ fontSize: 12, color: 'var(--fg-muted)', textAlign: 'center', marginBottom: 22 }}>
           {n >= 3
-            ? `${n} players — ${n === 4 ? '2v2 rotating' : '1v2 handicap rotation'}`
+            ? `${n} players — ${n === 4 ? '2v2 rotating' : '1v2 handicap'}`
             : <span style={{ color: 'var(--red)' }}>Select at least 3 players</span>
           }
         </p>
 
-        {/* Only show these when valid player count */}
         {canGenerate && (
           <>
-            {/* Duration */}
             <div className="section-label">How long?</div>
             <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
               {[1, 2].map(h => (
@@ -190,28 +172,27 @@ export default function Setup({ onGenerate, onClose }) {
               ))}
             </div>
 
-            {/* Match count */}
             <div className="section-label" style={{ marginBottom: 8 }}>
               Matches{' '}
               <span style={{ fontWeight: 400, color: 'var(--fg-muted)', textTransform: 'none', letterSpacing: 0, fontSize: 10 }}>
                 — Auto picks based on duration
               </span>
             </div>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-              {[null, ...matchOptions].map(n => (
+            <div style={{ display: 'flex', gap: 8, marginBottom: 26, flexWrap: 'wrap' }}>
+              {[null, ...matchOptions].map(opt => (
                 <button
-                  key={n ?? 'auto'}
-                  onClick={() => setMatchCount(n)}
+                  key={opt ?? 'auto'}
+                  onClick={() => setMatchCount(opt)}
                   style={{
                     flex: 1, minWidth: 46, padding: '9px 0', borderRadius: 10, border: '1.5px solid',
-                    borderColor: matchCount === n ? 'var(--green)' : 'var(--border)',
-                    background: matchCount === n ? 'var(--green-bg)' : 'var(--elevated)',
-                    color: matchCount === n ? 'var(--green)' : 'var(--fg-muted)',
+                    borderColor: matchCount === opt ? 'var(--green)' : 'var(--border)',
+                    background: matchCount === opt ? 'var(--green-bg)' : 'var(--elevated)',
+                    color: matchCount === opt ? 'var(--green)' : 'var(--fg-muted)',
                     fontWeight: 700, fontSize: 13, cursor: 'pointer',
                     transition: 'all .15s', fontFamily: 'Inter, sans-serif',
                   }}
                 >
-                  {n ?? 'Auto'}
+                  {opt ?? 'Auto'}
                 </button>
               ))}
             </div>
@@ -225,7 +206,7 @@ export default function Setup({ onGenerate, onClose }) {
             onClick={handleGenerate}
             disabled={!canGenerate || loading}
           >
-            <CrossedAxesIcon size={18} color="#07070d" />
+            <CrossedAxesIcon size={17} color="#07070d" />
             {loading ? 'Generating…' : 'Generate Schedule'}
           </button>
           <button className="btn-secondary" onClick={onClose}>Cancel</button>
