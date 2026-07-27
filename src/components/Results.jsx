@@ -5,7 +5,7 @@ import { readHistory, writeHistory } from '../lib/github';
 import { SQUAD } from '../lib/players';
 import { RacketSVG } from './Animations';
 
-export default function Results({ players, matches, date, onSaved, onBack }) {
+export default function Results({ players, matches, date, sessionType = 'structured', onSaved, onBack }) {
   const [summary, setSummary] = useState('');
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -44,7 +44,7 @@ export default function Results({ players, matches, date, onSaved, onBack }) {
       const sessionId = `s_${date.replace(/-/g, '')}_${String(history.sessions.length + 1).padStart(3, '0')}`;
       const sessionPlayerIds = players.map(p => p.id);
       const session = {
-        id: sessionId, date, type: 'structured',
+        id: sessionId, date, type: sessionType,
         duration: matches[0]?.format?.toLowerCase().includes('set') ? 2 : 1,
         playerCount: players.length,
         playerIds: sessionPlayerIds,
@@ -66,7 +66,9 @@ export default function Results({ players, matches, date, onSaved, onBack }) {
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '24px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--fg-muted)', cursor: 'pointer', fontSize: 20, padding: '0 4px' }}>‹</button>
-        <div style={{ fontWeight: 800, fontSize: 20 }}>Session Results</div>
+        <div style={{ fontWeight: 800, fontSize: 20 }}>
+          {sessionType === 'casual' ? '🎾 Casual Play Results' : '🏸 Session Results'}
+        </div>
       </div>
 
       {/* Scores */}

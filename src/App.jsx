@@ -12,19 +12,19 @@ import { generateMatches } from './lib/tournament';
 import { readHistory, writeHistory } from './lib/github';
 
 export default function App() {
-  const [view, setView] = useState('home');   // home | schedule | results | leaderboard
+  const [view, setView] = useState('home');
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [historyCache, setHistoryCache] = useState(null);
 
   // Modal states
   const [setupDate, setSetupDate] = useState(null);
   const [casualDate, setCasualDate] = useState(null);
   const [loggingMatchId, setLoggingMatchId] = useState(null);
 
-  // Session flow state
+  // Shared session flow state (used by both structured + casual)
   const [sessionPlayers, setSessionPlayers] = useState([]);
   const [sessionDate, setSessionDate] = useState(null);
+  const [sessionType, setSessionType] = useState('structured');
   const [matches, setMatches] = useState([]);
 
   // Shuttle animation
@@ -37,30 +37,26 @@ export default function App() {
     setTimeout(() => setShowShuttle(false), 2000);
   }
 
-  // Load history on mount
   useEffect(() => {
     readHistory()
-      .then(({ data, sha }) => {
-        setHistoryCache({ data, sha });
-        setSessions(data.sessions || []);
-      })
+      .then(({ data }) => setSessions(data.sessions || []))
       .catch(() => setSessions([]))
       .finally(() => setLoading(false));
   }, []);
 
   async function refreshHistory() {
     try {
-      const { data, sha } = await readHistory();
-      setHistoryCache({ data, sha });
+      const { data } = await readHistory();
       setSessions(data.sessions || []);
     } catch {}
   }
 
-  // --- Session flow ---
+  // --- Structured session flow ---
   async function handleGenerate({ players, hours, date }) {
     setSetupDate(null);
     setSessionPlayers(players);
     setSessionDate(date);
+    setSessionType('structured');
 
     let builtMatches;
     try {
@@ -89,35 +85,21 @@ export default function App() {
     setLoggingMatchId(null);
   }
 
+  // --- Casual session: comes back with players + completed matches, goes to Results ---
+  function handleCasualProceed({ players, matches: casualMatches }) {
+    setCasualDate(null);
+    setSessionPlayers(players);
+    setSessionDate(casualDate);
+    setSessionType('casual');
+    setMatches(casualMatches);
+    shuttle();
+    setView('results');
+  }
+
   async function handleSessionSaved() {
     await refreshHistory();
     shuttle();
     setView('home');
-  }
-
-  // --- Casual log ---
-  async function handleCasualSave({ type, playerIds, note, date }) {
-    setCasualDate(null);
-    try {
-      const { data: history, sha } = historyCache
-        ? await readHistory()
-        : { data: { players: [], duos: {}, sessions: [] }, sha: null };
-
-      const sessionId = `s_${date.replace(/-/g, '')}_casual_${Date.now()}`;
-      const session = {
-        id: sessionId, date, type: 'casual',
-        playerIds, note,
-        matches: [], sessionLeaderboard: {}, aiSummary: '',
-      };
-      history.sessions.push(session);
-
-      if (sha) {
-        await writeHistory(history, sha, date);
-      }
-      await refreshHistory();
-    } catch (e) {
-      console.error('Save casual failed', e);
-    }
   }
 
   // --- Delete session ---
@@ -139,7 +121,6 @@ export default function App() {
     <div style={{ minHeight: '100vh' }}>
       {showShuttle && <ShuttleTransition id={shuttleKey} />}
 
-      {/* Header */}
       <header style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '18px 20px 0',
@@ -172,14 +153,13 @@ export default function App() {
         </div>
       </header>
 
-      {/* Views */}
       <div className="app-wrap" style={{ paddingTop: 24 }}>
         {view === 'home' && (
           <div>
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontWeight: 800, fontSize: 24, marginBottom: 4 }}>Hey squad 🏸</div>
               <div style={{ color: 'var(--fg-muted)', fontSize: 15 }}>
-                {loading ? 'Loading sessions…' : `${sessions.length} sessions played`}
+                {loading ? 'Loading…' : `${sessions.length} sessions played`}
               </div>
             </div>
             <div className="card">
@@ -210,39 +190,26 @@ export default function App() {
             players={sessionPlayers}
             matches={matches}
             date={sessionDate}
+            sessionType={sessionType}
             onSaved={handleSessionSaved}
-            onBack={() => setView('schedule')}
+            onBack={() => sessionType === 'casual' ? setView('home') : setView('schedule')}
           />
         )}
 
-        {view === 'leaderboard' && (
-          <Leaderboard onBack={() => setView('home')} />
-        )}
+        {view === 'leaderboard' && <Leaderboard onBack={() => setView('home')} />}
       </div>
 
       {/* Modals */}
       {setupDate && (
-        <Setup
-          date={setupDate}
-          onGenerate={handleGenerate}
-          onClose={() => setSetupDate(null)}
-        />
+        <Setup date={setupDate} onGenerate={handleGenerate} onClose={() => setSetupDate(null)} />
       )}
 
       {casualDate && (
-        <CasualLog
-          date={casualDate}
-          onSave={handleCasualSave}
-          onClose={() => setCasualDate(null)}
-        />
+        <CasualLog date={casualDate} onProceed={handleCasualProceed} onClose={() => setCasualDate(null)} />
       )}
 
       {logMatch && (
-        <MatchLogger
-          match={logMatch}
-          onLog={handleLogWinner}
-          onClose={() => setLoggingMatchId(null)}
-        />
+        <MatchLogger match={logMatch} onLog={handleLogWinner} onClose={() => setLoggingMatchId(null)} />
       )}
     </div>
   );
