@@ -28,7 +28,11 @@ function SessionCard({ session, onDelete }) {
   const logged = session.matches?.filter(m => m.winner)?.length || 0;
 
   return (
-    <div className="card" style={{ padding: '16px 18px' }}>
+    <div
+      className="card"
+      onClick={() => !confirmDelete && setExpanded(e => !e)}
+      style={{ padding: '16px 18px', cursor: 'pointer', userSelect: 'none' }}
+    >
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <CrossedAxesIcon size={20} color="var(--fg-muted)" style={{ opacity: 0.35, flexShrink: 0 }} />
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -37,7 +41,7 @@ function SessionCard({ session, onDelete }) {
             {session.type === 'casual' ? 'Casual play' : 'Structured'} · {logged}/{total} matches
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
           <div style={{ display: 'flex' }}>
             {players.slice(0, 4).map((p, i) => (
               <div key={p.id} style={{ marginLeft: i > 0 ? -8 : 0 }}>
@@ -48,29 +52,25 @@ function SessionCard({ session, onDelete }) {
           {!confirmDelete ? (
             <button
               onClick={() => setConfirmDelete(true)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 18, lineHeight: 1, padding: '0 4px', opacity: 0.4 }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 16, lineHeight: 1, padding: '4px 6px', opacity: 0.4, borderRadius: 6 }}
               title="Delete session"
             >🗑</button>
           ) : (
-            <div style={{ display: 'flex', gap: 6 }}>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
               <button className="btn-danger" onClick={() => onDelete(session.id)}>Delete</button>
               <button onClick={() => setConfirmDelete(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--fg-muted)', fontSize: 13, fontWeight: 600 }}>Cancel</button>
             </div>
           )}
-          <button
-            onClick={() => setExpanded(e => !e)}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--fg-muted)', fontSize: 20, lineHeight: 1, padding: '0 2px',
-              transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform .2s',
-            }}
-          >›</button>
+          <div style={{
+            color: 'var(--fg-muted)', fontSize: 18, lineHeight: 1, padding: '0 2px',
+            transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform .2s',
+          }}>›</div>
         </div>
       </div>
 
       {expanded && (
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: session.aiSummary ? 14 : 0 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: session.aiSummary ? 14 : 0 }}>
             {(session.matches || []).map((m, i) => <MatchLine key={i} match={m} />)}
           </div>
           {session.aiSummary && (
