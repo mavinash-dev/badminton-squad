@@ -141,12 +141,32 @@ export default function Results({ players, matches, date, sessionType = 'structu
             <span style={{ fontWeight: 700, fontSize: 15 }}>{duoNames(bestDuo)}</span>
           </div>
         </div>
-      ) : duoTied && (
-        <div className="card" style={{ marginBottom: 14 }}>
-          <div className="section-label" style={{ marginBottom: 6 }}>Best Duo</div>
-          <div style={{ fontSize: 13, color: 'var(--fg-muted)' }}>Tied — no clear winners today</div>
-        </div>
-      )}
+      ) : duoTied && (() => {
+        // Collect all tied duos
+        const duoWins = {};
+        matches.forEach(m => {
+          if (!m.winner) return;
+          const team = m.winner === 'A' ? m.teamA : m.teamB;
+          if (team.length === 2) {
+            const k = [team[0], team[1]].sort().join('_');
+            duoWins[k] = (duoWins[k] || 0) + 1;
+          }
+        });
+        const maxW = Math.max(...Object.values(duoWins));
+        const tied = Object.entries(duoWins).filter(([, v]) => v === maxW);
+        return (
+          <div className="card" style={{ marginBottom: 14 }}>
+            <div className="section-label" style={{ marginBottom: 10 }}>Best Duo — Tied</div>
+            {tied.map(([key, w]) => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                <TeamAvatars ids={key.split('_')} size={30} />
+                <span style={{ fontWeight: 700, fontSize: 14 }}>{duoNames(key)}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--green)', fontWeight: 700 }}>{w}W</span>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* AI Summary */}
       {!summary ? (

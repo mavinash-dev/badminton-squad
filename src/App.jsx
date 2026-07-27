@@ -119,18 +119,6 @@ export default function App() {
       <Background />
       {showShuttle && <ShuttleTransition id={shuttleKey} />}
 
-      {view !== 'home' && (
-        <div style={{ maxWidth: 640, margin: '0 auto', padding: '18px 20px 0', display: 'flex', justifyContent: 'flex-start' }}>
-          <button
-            className="btn-secondary"
-            style={{ fontSize: 13, padding: '7px 14px' }}
-            onClick={() => { shuttle(); setView('home'); }}
-          >
-            ← Home
-          </button>
-        </div>
-      )}
-
       <div className="app-wrap" style={{ paddingTop: 20 }}>
 
         {view === 'home' && (

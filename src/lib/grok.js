@@ -52,19 +52,38 @@ Always use their actual name: ${player.name}. 2-3 sentences only.`
 }
 
 export async function generateSummary({ players, matches, sessionLeaderboard }) {
-  const mvpPlayer = sessionLeaderboard.mvp ? players.find(p => p.id === sessionLeaderboard.mvp) : null;
-  const mvpName = mvpPlayer?.name || null;
-  const duoNames = sessionLeaderboard.bestDuo
-    ? sessionLeaderboard.bestDuo.split('_').map(id => players.find(p => p.id === id)?.name || id).join(' & ')
-    : null;
+  const name = id => players.find(p => p.id === id)?.name || id;
+  const mvpName = sessionLeaderboard.mvp ? name(sessionLeaderboard.mvp) : null;
+  const duoLabel = sessionLeaderboard.bestDuo
+    ? sessionLeaderboard.bestDuo.split('_').map(name).join(' & ') : null;
+
+  // Per-player win counts
+  const wins = {};
+  players.forEach(p => { wins[p.name] = 0; });
+  matches.forEach(m => {
+    if (!m.winner) return;
+    (m.winner === 'A' ? m.teamA : m.teamB).forEach(id => { wins[name(id)] = (wins[name(id)] || 0) + 1; });
+  });
+  const scoreline = players.map(p => `${p.name}: ${wins[p.name]}W`).join(', ');
+
+  // Match-by-match narrative
+  const matchSummary = matches
+    .filter(m => m.winner)
+    .map(m => {
+      const a = m.teamA.map(name).join(' & ');
+      const b = m.teamB.map(name).join(' & ');
+      const winner = m.winner === 'A' ? a : b;
+      const loser = m.winner === 'A' ? b : a;
+      return `${winner} beat ${loser}`;
+    }).join('; ');
 
   return call(
-    'You are an energetic sports commentator for a friends badminton group. Be hype, casual, funny, and a little savage. 3 sentences max. No markdown.',
-    `Players in this session: ${players.map(p => p.name).join(', ')}.
-Match results: ${JSON.stringify(matches.map(m => ({ teamA: m.teamA.map(id => players.find(p=>p.id===id)?.name||id), teamB: m.teamB.map(id => players.find(p=>p.id===id)?.name||id), winner: m.winner === 'A' ? m.teamA.map(id => players.find(p=>p.id===id)?.name||id) : m.winner === 'B' ? m.teamB.map(id => players.find(p=>p.id===id)?.name||id) : null })))}.
-${mvpName ? `MVP: ${mvpName}.` : 'It was a tie — no clear MVP today.'}
-${duoNames ? `Best duo: ${duoNames}.` : ''}
-IMPORTANT: Always refer to players by their actual names (${players.map(p => p.name).join(', ')}). Never say "Player A", "the winner", "they", etc. — use names.
-Write a short hype wrap-up${mvpName ? ` declaring ${mvpName} the champion` : ' acknowledging the tie'}. Gently roast the losers by name. Keep it fun and friendly. 3 sentences max.`
+    'You are a savage but lovable sports commentator for a friends badminton group. Be hype, funny, brutally honest. 3 sentences max. No markdown.',
+    `Session scoreline: ${scoreline}.
+Match results: ${matchSummary}.
+${mvpName ? `MVP this session: ${mvpName}.` : 'No MVP — it was a tie.'}
+${duoLabel ? `Deadliest duo: ${duoLabel}.` : ''}
+Players: ${players.map(p => p.name).join(', ')}.
+Write a punchy 3-sentence post-match wrap-up. Call out the MVP by name, roast the bottom player by name, mention the best partnership if there is one. Always use real names — never "the winner" or "they".`
   );
 }
