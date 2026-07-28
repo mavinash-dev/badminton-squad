@@ -1,5 +1,193 @@
 {
-  "players": [],
-  "duos": {},
-  "sessions": []
+  "players": [
+    {
+      "id": "p1",
+      "name": "Avinash",
+      "wins": 5,
+      "games": 9
+    },
+    {
+      "id": "p2",
+      "name": "Bhavya",
+      "wins": 3,
+      "games": 9
+    },
+    {
+      "id": "p3",
+      "name": "Malay",
+      "wins": 3,
+      "games": 9
+    },
+    {
+      "id": "p4",
+      "name": "Rajeev",
+      "wins": 7,
+      "games": 9
+    }
+  ],
+  "duos": {
+    "p1_p3": {
+      "wins": 1,
+      "games": 3
+    },
+    "p2_p4": {
+      "wins": 2,
+      "games": 3
+    },
+    "p1_p4": {
+      "wins": 3,
+      "games": 3
+    },
+    "p2_p3": {
+      "wins": 0,
+      "games": 3
+    },
+    "p3_p4": {
+      "wins": 2,
+      "games": 3
+    },
+    "p1_p2": {
+      "wins": 1,
+      "games": 3
+    }
+  },
+  "sessions": [
+    {
+      "id": "s_20260728_001",
+      "date": "2026-07-28",
+      "type": "structured",
+      "duration": 1,
+      "playerCount": 4,
+      "playerIds": [
+        "p1",
+        "p2",
+        "p3",
+        "p4"
+      ],
+      "matches": [
+        {
+          "matchId": 1,
+          "teamA": [
+            "p1",
+            "p3"
+          ],
+          "teamB": [
+            "p2",
+            "p4"
+          ],
+          "format": "First to 21",
+          "winner": "A"
+        },
+        {
+          "matchId": 2,
+          "teamA": [
+            "p1",
+            "p4"
+          ],
+          "teamB": [
+            "p2",
+            "p3"
+          ],
+          "format": "First to 21",
+          "winner": "A"
+        },
+        {
+          "matchId": 3,
+          "teamA": [
+            "p1",
+            "p2"
+          ],
+          "teamB": [
+            "p3",
+            "p4"
+          ],
+          "format": "First to 21",
+          "winner": "B"
+        },
+        {
+          "matchId": 4,
+          "teamA": [
+            "p1",
+            "p3"
+          ],
+          "teamB": [
+            "p2",
+            "p4"
+          ],
+          "format": "First to 21",
+          "winner": "B"
+        },
+        {
+          "matchId": 5,
+          "teamA": [
+            "p1",
+            "p4"
+          ],
+          "teamB": [
+            "p2",
+            "p3"
+          ],
+          "format": "First to 21",
+          "winner": "A"
+        },
+        {
+          "matchId": 6,
+          "teamA": [
+            "p1",
+            "p2"
+          ],
+          "teamB": [
+            "p3",
+            "p4"
+          ],
+          "format": "First to 21",
+          "winner": "A"
+        },
+        {
+          "matchId": 7,
+          "teamA": [
+            "p1",
+            "p3"
+          ],
+          "teamB": [
+            "p2",
+            "p4"
+          ],
+          "format": "First to 21",
+          "winner": "B"
+        },
+        {
+          "matchId": 8,
+          "teamA": [
+            "p1",
+            "p4"
+          ],
+          "teamB": [
+            "p2",
+            "p3"
+          ],
+          "format": "First to 21",
+          "winner": "A"
+        },
+        {
+          "matchId": 9,
+          "teamA": [
+            "p1",
+            "p2"
+          ],
+          "teamB": [
+            "p3",
+            "p4"
+          ],
+          "format": "First to 21",
+          "winner": "B"
+        }
+      ],
+      "sessionLeaderboard": {
+        "mvp": "p4",
+        "bestDuo": "p1_p4"
+      },
+      "aiSummary": ""
+    }
+  ]
 }
